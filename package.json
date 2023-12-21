@@ -1,0 +1,28 @@
+{
+    "name": "sgp4",
+    "version": "1.0.0",
+    "description": "TypeScript reimplementation of SGP4/SDP4 solution",
+      "main": "index.js",
+    "scripts": {
+      "test": "mocha --recursive --timeout 60000 --require @babel/register",
+      "build": "webpack"
+    },
+    "keywords": [],
+    "author": "Ville Räisänen",
+    "license": "MIT",
+    "type": "module",
+    "devDependencies": {
+      "webpack": "^5.72.1",
+      "webpack-cli": "^5.1.4"
+    },
+    "dependencies": {
+      "@babel/core": "^7.18.0",
+      "@babel/register": "^7.17.7",
+      "babel-cli": "^6.26.0",
+      "babel-core": "^6.26.3",
+      "babel-preset-env": "^1.7.0",
+      "babel-register": "^6.26.0",
+      "jsdoc": "^3.6.10",
+      "mocha": "^10.0.0"
+    }
+  }

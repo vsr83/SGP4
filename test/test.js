@@ -1,5 +1,5 @@
 import { tleFromLines } from "../src/TLE.js";
-import { computeBrouwer, secularGravity, secularDrag } from "../src/SGP4.js";
+import { computeBrouwer, secularGravity, secularDrag, applySecularGravity } from "../src/SGP4.js";
 
 describe('SGP4 propagation', function() {
     describe('CALSPHERE 1', function() {
@@ -16,5 +16,8 @@ describe('SGP4 propagation', function() {
         console.log(secGrav);
         const dragTerm = secularDrag(tle, brouwer);
         console.log(dragTerm);
+
+        const kepler1 = applySecularGravity(tle, brouwer, secGrav, 10.0);
+        console.log(kepler1);
     });
-});
+}); 

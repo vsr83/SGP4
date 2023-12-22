@@ -29,8 +29,6 @@ export function sgp4Applicable(brouwer) {
     return (2.0 * Math.PI / brouwer.meanMotionBrouwer) < 225.0;
 }
 
-
-
 /**
  * Compute Brouwer mean motion and semi-major axis from Kozai mean motion.
  * 
@@ -84,11 +82,11 @@ export function computeBrouwer(tle)
  * Compute secular perturbations due to spherical harmonics in Earth's gravitational
  * potential. This is equivalent to computing the time derivatives of the 
  * quantities (l'' - l_0''),  (g'' - g_0'') and (h'' - h_0) in [1] with the 
- * approximations e'^2 = 0 and \eta = \eta^2 = 1. 
+ * approximations e'^2 = 0 and \eta = \eta^2 = 1. The Keplerian change in mean 
+ * anomaly is contained in the computed time derivatives.
  * 
  * In [3], the equations are also derived via geopotential simplification of AFGP4 
  * model.
- * 
  * 
  * References:
  * [1] Brouwer - Solution of the Problem of Artificial Satellite Theory Without
@@ -101,6 +99,8 @@ export function computeBrouwer(tle)
  * @param {BrouwerElements} The Brouwer elements Mdot, omegaDot and OmegaDot, which 
  * contain the the time derivatives in (radians/minute) for the "mean" mean anomaly, 
  * mean argument of perigee and the mean longitude of the ascending node.
+ * @returns {BrouwerDerivatives} Time derivatives of mean anomaly, argument of perigee 
+ * and right ascension of the ascending node. TODO: Add units.
  */
 export function secularGravity(tle, brouwer) 
 {
@@ -138,8 +138,12 @@ export function secularGravity(tle, brouwer)
  * Theory, Project Space Track, 1979.
  * [2] Hoots, Roehrich - Spacetrack Report No. 3
  * 
- * @param {Tle} tle The TLE
- * @param {BrouwerElements} brouwer The Brouwer mean elements.
+ * @param {Tle} tle 
+ *      The TLE.
+ * @param {BrouwerElements} brouwer 
+ *      The Brouwer mean elements. TODO
+ * @returns {DragCoefficients}
+ *      Secular drag coefficients.
  */
 export function secularDrag(tle, brouwer)
 {
@@ -253,3 +257,40 @@ function gstime(jtUt1)
     return temp;
 }
 
+/**
+ * Compute Keplerian elements with perturbations from secular gravitational
+ * perturbations as well as the Keplerian mean motion.
+ * 
+ * @param {Tle} tle 
+ *      The TLE
+ * @param {BrouwerElements} brouwer 
+ *      The Brouwer mean elements. TODO
+ * @param {number} deltaTime 
+ *      The number of fractional minutes after epoch.
+ * @return {KeplerElements} Keplerian elements.
+ */
+export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime) 
+{
+    // Mean anomaly at epoch (rad).
+    const Mepoch = deg2Rad(tle.meanAnomaly);
+    // Argument of perigee at epoch (rad).
+    const omegaEpoch = deg2Rad(tle.argPerigee);
+    // Right ascension of the ascending node (rad).
+    const OmegaEpoch = deg2Rad(tle.raAscNode);
+
+    const a = brouwer.semiMajorAxisBrouwer;
+    const incl = deg2Rad(tle.inclination);
+    const ecc = tle.eccentricity; 
+    const M = Mepoch + brouwerDer.MDot * deltaTime;
+    const omega = omegaEpoch + brouwerDer.omegaDot * deltaTime;
+    const Omega = OmegaEpoch + brouwerDer.OmegaDot * deltaTime;
+
+    return {
+        a : a, incl : incl, ecc : ecc, M : M, omega : omega, Omega : Omega
+    };
+}
+
+export function applySecularDrag(kepler, deltaTime) 
+{
+
+}

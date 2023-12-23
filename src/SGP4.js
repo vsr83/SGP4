@@ -41,7 +41,9 @@ export function sgp4Applicable(brouwer) {
  * Drag, The Astronomical Journal, 64, No. 1274, 378-396, 1959.
  * 
  * @param {Tle} The TLE.
- * @returns {BrouwerElements} The Brouwer mean elements
+ * @returns {BrouwerElements} The Brouwer mean elements.
+ * - meanMotionBrouwer: Brouwer mean motion (radians / minute).
+ * - semiMajorAxisBrouwer: Brouwer semi major axis (Earth radii).
  */
 export function computeBrouwer(tle)
 {
@@ -99,8 +101,10 @@ export function computeBrouwer(tle)
  * @param {BrouwerElements} The Brouwer elements Mdot, omegaDot and OmegaDot, which 
  * contain the the time derivatives in (radians/minute) for the "mean" mean anomaly, 
  * mean argument of perigee and the mean longitude of the ascending node.
- * @returns {BrouwerDerivatives} Time derivatives of mean anomaly, argument of perigee 
- * and right ascension of the ascending node. TODO: Add units.
+ * @returns {BrouwerDerivatives} Object with the following fields.
+ * - MDot: Time derivative of mean anomaly (radians/minute).
+ * - omegaDot: Time derivative of the argument of perigee (radians/minute).
+ * - OmegaDot: Time derivative of the longitude of ascending node (radians/minute).
  */
 export function secularGravity(tle, brouwer) 
 {
@@ -141,9 +145,13 @@ export function secularGravity(tle, brouwer)
  * @param {Tle} tle 
  *      The TLE.
  * @param {BrouwerElements} brouwer 
- *      The Brouwer mean elements. TODO
- * @returns {DragCoefficients}
- *      Secular drag coefficients.
+ *      The Brouwer mean elements (See secularGravity return).
+ * @returns {DragCoefficients} Secular drag coefficients.
+ * - C1, C2, C3, C4, C5, D2, D3, D4, D5: The drag coefficients defined in [1], [2].
+ * - t2cof, t3cof, t4cof, t5cof: Coefficients for time series evaluation of mean 
+ *   anomaly and mean longitude.
+ * - qs4Term, s, xi, eta, beta0, theta: Precomputed terms to avoid recomputation with
+ *   each time step.
  */
 export function secularDrag(tle, brouwer)
 {
@@ -152,7 +160,7 @@ export function secularDrag(tle, brouwer)
      * a_D = (\rho / \rho_0) * Bstar * v^2, where rho is air density, Bstar is the drag term obtained from the TLE, 
      * v the velocity the satellite w.r.t. the EFI frame and 
      * \rho = \rho_0 (\frac{q_0 - s}{r-s})^4,
-     * where q_0 = 120 km + Earth radius. 
+     * where q_0 = 120 km + Earth radius [1]. 
      */
 
     // Minimum distance at perigee (in Earth radii) [rp].
@@ -225,7 +233,8 @@ export function secularDrag(tle, brouwer)
     // the correct value.
     const D4 = (2.0 / 3.0) * a0 * a0 * xi[3] * (221 * a0 + 31 * s) * C1[4];
 
-    // Coefficients for time series evaluation of the mean longitude.
+    // Coefficients for time series evaluation of the mean longitude. These are
+    // evaluated here in order to reduce computational time.
     const t2cof = 1.5 * C1[1];
     const t3cof = D2 + 2 * C1[2];
     const t4cof = 0.25 * (3 * D3 + 12 * C1[1] * D2 + 10 * C1[3]);
@@ -275,7 +284,14 @@ function gstime(jtUt1)
  *      The Brouwer mean elements. TODO
  * @param {number} deltaTime 
  *      The number of fractional minutes after epoch.
- * @return {KeplerElements} Keplerian elements.
+ * @return {KeplerElements} The mean Keplerian elements after application of 
+ * the gravitational perturbations:
+ * - a: The mean semi-major axis (Earth radii)
+ * - incl: The mean inclination (radians)
+ * - ecc: The mean eccentricity (dimensionless)
+ * - M: The "mean" mean anomaly (radians)
+ * - omega: The mean argument of perigee (rad)
+ * - Omega: The mean longitude of ascending node (rad)
  */
 export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime) 
 {
@@ -299,7 +315,7 @@ export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime)
 }
 
 /**
- * 
+ * Apply perturbations from secular drag to Keplerian elements.
  * 
  * References:
  * [1] Lane, Hoots - General Perturbation Theories Derived from the 1965 Lane Drag 
@@ -307,12 +323,24 @@ export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime)
  * [2] Hoots, Roehrich - Spacetrack Report No. 3
  * 
  * @param {*} tle 
- * @param {*} brouwer 
+ *      The TLE.
+ * @param {*} brouwer
+ *      The Brouwer mean elements. 
  * @param {*} kepler 
+ *      The Keplerian elements from the computation of secular gravity.
  * @param {*} dragTerms 
+ *      The secular drag coefficients.
  * @param {*} deltaTime 
- * @returns 
- * 
+ *      The number of fractional minutes after epoch.
+ * @returns The mean Keplerian elements after application of secular perturbations from
+ * drag:
+ * - a: The mean semi-major axis (Earth radii)
+ * - incl: The mean inclination (radians)
+ * - ecc: The mean eccentricity (dimensionless)
+ * - M: The "mean" mean anomaly (radians)
+ * - omega: The mean argument of perigee (rad)
+ * - Omega: The mean longitude of ascending node (rad)
+ * - L: The mean longitude = M + omega + Omega (rad)
  */
 export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime) 
 {

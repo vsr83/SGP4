@@ -225,7 +225,15 @@ export function secularDrag(tle, brouwer)
     // the correct value.
     const D4 = (2.0 / 3.0) * a0 * a0 * xi[3] * (221 * a0 + 31 * s) * C1[4];
 
-    return {C1 : C1, C2 : C2, C3 : C3, C4 : C4, C5 : C5, D2 : D2, D3 : D3, D4 : D4};
+    // Coefficients for time series evaluation of the mean longitude.
+    const t2cof = 1.5 * C1[1];
+    const t3cof = D2 + 2 * C1[2];
+    const t4cof = 0.25 * (3 * D3 + 12 * C1[1] * D2 + 10 * C1[3]);
+    const t5cof = 0.2 * (3 * D4 + 12 * C1[1] * D3 + 6 * (D2 ** 2) + 30 * (C1[2]) * D2 + 15 * C1[4]);
+
+    return {C1 : C1, C2 : C2, C3 : C3, C4 : C4, C5 : C5, D2 : D2, D3 : D3, D4 : D4, 
+        t2cof : t2cof, t3cof : t3cof, t4cof : t4cof, t5cof : t5cof, qs4Term : qs4Term, s : s,
+        xi : xi, eta : eta, beta0 : beta0, theta : theta};
 }
 
 /**
@@ -290,7 +298,71 @@ export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime)
     };
 }
 
-export function applySecularDrag(kepler, deltaTime) 
+/**
+ * 
+ * 
+ * References:
+ * [1] Lane, Hoots - General Perturbation Theories Derived from the 1965 Lane Drag 
+ * Theory, Project Space Track, 1979.
+ * [2] Hoots, Roehrich - Spacetrack Report No. 3
+ * 
+ * @param {*} tle 
+ * @param {*} brouwer 
+ * @param {*} kepler 
+ * @param {*} dragTerms 
+ * @param {*} deltaTime 
+ * @returns 
+ * 
+ */
+export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime) 
 {
+    const {C1, C2, C3, C4, C5, D2, D3, D4, qs4Term, s, 
+        t2cof, t3cof, t4cof, t5cof, xi, eta, beta0, theta} = dragTerms;
 
+    // Mean anomaly at epoch (rad).
+    const Mepoch = deg2Rad(tle.meanAnomaly);
+    // Argument of perigee at epoch (rad).
+    const omegaEpoch = deg2Rad(tle.argPerigee);
+    const M0 = deg2Rad(tle.meanAnomaly);
+    const ecc0 = tle.eccentricity;
+
+    const a0 = createExp(brouwer.semiMajorAxisBrouwer, 2);
+    const n0 = brouwer.meanMotionBrouwer;
+    const dt = createExp(deltaTime, 5);
+    const i0 = deg2Rad(tle.inclination);
+
+    const k2 = 0.5 * sgp4Constants.j2;
+    const Bstar = tle.dragTerm;
+
+    const deltaomega = tle.dragTerm * C3 * Math.cos(omegaEpoch) * deltaTime;
+    const deltaM = -(2/3) * qs4Term * tle.dragTerm * xi[4] / (eta[1] * ecc0)
+                 * (Math.pow(1 + eta[1] * Math.cos(kepler.M), 3) - Math.pow(1 + eta[1] * Math.cos(M0), 3)); 
+
+    // Not final mean anomaly.
+    let M = kepler.M + deltaomega + deltaM;
+    const omega = kepler.omega - deltaomega - deltaM;
+    const Omega = kepler.Omega - 10.5 * (n0 * k2 * theta[1])
+                / (a0[2] * beta0[2]) * C1[1] * dt[2];
+    const ecc = tle.eccentricity 
+              - Bstar * C4 * dt[1]
+              - Bstar * C5 * (Math.sin(M) - Math.sin(M0));
+
+    // From implementation by Vallado : Fix tolerance to avoid a divide by zero.
+    if (ecc < 1e-6) {
+        ecc = 1e-6;
+    }
+    const a = a0[1] * Math.pow(
+        1 - C1[1] * dt[1] - D2 * dt[2] - D3 * dt[3] - D4 * dt[4], 2);
+
+    // Mean longitude.
+    let L = M + omega + Omega 
+          + n0 * (t2cof * dt[2] + t3cof * dt[3] + t4cof * dt[4] + t5cof * dt[5]);
+    L = L % (2 * Math.PI);
+
+    // The mean anomaly in [2] is inconsistent with the SGP4 implementations, where
+    // mean anomaly is updated as follows. Of course, mean longitude does not make
+    // sense without this update.
+    M = L - omega - Omega;
+
+    return {a : a, incl : kepler.incl, ecc : ecc, M : M, omega : omega, Omega : Omega, L : L};
 }

@@ -1,5 +1,5 @@
 import { tleFromLines } from "../src/TLE.js";
-import { computeBrouwer, secularGravity, secularDrag, applySecularGravity, applySecularDrag, applyPeriodics } from "../src/SGP4.js";
+import { computeBrouwer, secularGravity, secularDrag, applySecularGravity, applySecularDrag, applyPeriodics, osculatingToJ2000 } from "../src/SGP4.js";
 
 describe('SGP4 propagation', function() {
     describe('CALSPHERE 1', function() {
@@ -25,6 +25,10 @@ describe('SGP4 propagation', function() {
 
         const periodics = applyPeriodics(tle, kepler2);
         console.log(periodics);
+
+        const osc = osculatingToJ2000(periodics);
+        console.log(osc);
+
         //a: 1.153629084158538,
         //am 1.15362908415853793187
         //incl: 1.5742416067383334,

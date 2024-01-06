@@ -399,6 +399,11 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
 /**
  * Apply periodics to compute osculating elements.
  * 
+ * References:
+ * [1] Lane, Hoots - General Perturbation Theories Derived from the 1965 Lane Drag 
+ * Theory, Project Space Track, 1979.
+ * [2] Hoots, Roehrich - Spacetrack Report No. 3
+ * 
  * @param {*} tle 
  *      The TLE.
  * @param {*} kepler 
@@ -409,7 +414,8 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
  * - Omega : Longitude of the ascending node (radians),
  * - incl : Inclination (radians)
  * - rdot : Time derivative of r (earth radii / minute)
- * - rfdot : Product of r and natural anomaly (earth radii * radians / minute).
+ * - rfdot : Product of r and the time derivative natural anomaly 
+ *           (earth radii * radians / minute).
  */
 export function applyPeriodics(tle, kepler) 
 {
@@ -449,8 +455,6 @@ export function applyPeriodics(tle, kepler)
         delta = -(U - ayN * Math.cos(oe) + axN * Math.sin(oe) - oe)
               / (ayN * Math.sin(oe) + axN * Math.cos(oe) - 1);
 
-        console.log(delta + " " + oe);
-
         if (Math.abs(delta) >= 0.95)
         {
             delta = 0.95 * Math.sign(delta);
@@ -459,6 +463,8 @@ export function applyPeriodics(tle, kepler)
         iter++;
     }
 
+    // We solve the eccentricity and eccentric anomaly from the pair 
+    // (e cos E, e sin E):
     const ecosE = axN * Math.cos(oe) + ayN * Math.sin(oe);
     const esinE = axN * Math.sin(oe) - ayN * Math.cos(oe);
 
@@ -468,46 +474,94 @@ export function applyPeriodics(tle, kepler)
     const eL = Math.sqrt(axN * axN + ayN * ayN);
     // Semi-latus rectum with long-term periodics. TBD: a
     const pL = kepler.a * (1 - eL * eL);
-    // Distance from the ellipse focus to the satellite.
-    const r = kepler.a * (1 - eL * Math.cos(E)); 
 
+    // Now we compute elements with large-period periodics included
+    // (rL, uL, OmegaL=Omega, iL=incl, rdotL, rfdotL).
+
+    // Distance from the ellipse focus to the satellite.
+    const rL = kepler.a * (1 - eL * Math.cos(E)); 
     // Perform anti-clockwise rotation of the point (a(cos E - e), bsin E) with the
     // argument of perigee.
-    const cosu = (kepler.a / r) 
+    const cosu = (kepler.a / rL) 
                * (Math.cos(oe) - axN + ayN * esinE / (1 + Math.sqrt(1 - eL ** 2)));
-    const sinu = (kepler.a / r) 
+    const sinu = (kepler.a / rL) 
                * (Math.sin(oe) - ayN - axN * esinE / (1 + Math.sqrt(1 - eL ** 2)));
-    const u = Math.atan2(sinu, cosu);
-
-    const rdot = Math.sqrt(kepler.a) * esinE / r;
-    const rfdot = Math.sqrt(pL) / r;
+    const uL = Math.atan2(sinu, cosu);
+    const rdotL = Math.sqrt(kepler.a) * esinE / rL;
+    const rfdotL = Math.sqrt(pL) / rL;
 
     const n = Math.pow(kepler.a, -1.5);
 
-    const sin2u = Math.sin(2 * u);
-    const cos2u = Math.cos(2 * u);
+    // 
+    const sin2u = Math.sin(2 * uL);
+    const cos2u = Math.cos(2 * uL);
+    const theta2 = theta ** 2;
 
-    // Compute short period periodics.
-    const Deltar = 0.5 * k2 * (1 - theta ** 2) * cos2u / pL;
-    const Deltau = -0.25 * k2 * (7 * theta ** 2 - 1) * sin2u / (pL * pL);
+    // Short-period periodics to be added to the above elements.
+    const Deltar = 0.5 * k2 * (1 - theta2) * cos2u / pL;
+    const Deltau = -0.25 * k2 * (7 * theta2 - 1) * sin2u / (pL * pL);
     const DeltaOmega = 1.5 * k2 * theta * sin2u / (pL * pL);
     const Deltai = 1.5 * k2 * theta * Math.sin(kepler.incl) * cos2u / (pL * pL);
-    const Deltardot = - k2 * n * (1 - theta ** 2) * sin2u / pL;
-    const Deltarfdot = k2 * n * ((1 - theta ** 2) * cos2u 
-                     - 1.5 * (1 - 3 * theta ** 2)) / pL;                      
+    const Deltardot = - k2 * n * (1 - theta2) * sin2u / pL;
+    const Deltarfdot = k2 * n * ((1 - theta2) * cos2u 
+                     - 1.5 * (1 - 3 * theta2)) / pL;                      
 
-    // Compute osculating elements.
-    const rk = r * (1 - 1.5 * k2 * Math.sqrt(1 - eL**2) * (3 * theta**2 - 1) / pL ** 2)
+    // Compute and add short-period periodics to the above elements.
+    // (rk, uk, Omegak, ik, rdotk, rfdotk).
+    const rk = rL * (1 - 1.5 * k2 * Math.sqrt(1 - eL**2) * (3 * theta2 - 1) / pL ** 2)
              + Deltar;
-    const uk = u + Deltau;
+    const uk = uL + Deltau;
     const Omegak = kepler.Omega + DeltaOmega;
     const ik = kepler.incl + Deltai;
-    const rdotk = rdot + Deltardot;
-    const rfdotk = rfdot + Deltarfdot;
+    const rdotk = rdotL + Deltardot;
+    const rfdotk = rfdotL + Deltarfdot;
 
     return {
         r : rk, u : uk, Omega : Omegak, incl : ik, rdot : rdotk, rfdot : rfdotk
     };
+}
+
+/**
+ * Convert osculating elements to the J2000 frame.
+ * 
+ * References:
+ * [1] Hoots, Roehrich - Spacetrack Report No. 3
+ * 
+ * @param {*} osculating The osculating elements with the short-period periodics.
+ * @return Orbit state vector with 
+ * - r: Position vector in J2000 frame in km.
+ * - v: Velocity vector in J2000 frame in km/s
+ */
+export function osculatingToJ2000(osculating) {
+    // To get the position, we compute the matrix product:
+    // R_z(-\Omega)R_x(-i)R_z(-omega)*[r cos f, r sin f, 0].
+    // This can be written with the substitution u = f + omega to the format
+    // used in [1] and implemented here.
+
+    const Mx = -Math.sin(osculating.Omega) * Math.cos(osculating.incl);
+    const My =  Math.cos(osculating.Omega) * Math.cos(osculating.incl);
+    const Mz =  Math.sin(osculating.incl);
+    const Nx = Math.cos(osculating.Omega);
+    const Ny = Math.sin(osculating.Omega);
+    const Nz = 0;
+
+    const Ux = Mx * Math.sin(osculating.u) + Nx * Math.cos(osculating.u);
+    const Uy = My * Math.sin(osculating.u) + Ny * Math.cos(osculating.u);
+    const Uz = Mz * Math.sin(osculating.u) + Nz * Math.cos(osculating.u);
+    const Vx = Mx * Math.cos(osculating.u) - Nx * Math.sin(osculating.u);
+    const Vy = My * Math.cos(osculating.u) - Ny * Math.sin(osculating.u);
+    const Vz = Mz * Math.cos(osculating.u) - Nz * Math.sin(osculating.u);
+
+    const vToKmPerSec = sgp4Constants.radiusEarthKm * sgp4Constants.xke / 60.0;
+
+    const rx = osculating.r * Ux * sgp4Constants.radiusEarthKm;
+    const ry = osculating.r * Uy * sgp4Constants.radiusEarthKm;
+    const rz = osculating.r * Uz * sgp4Constants.radiusEarthKm;
+    const rdotx = (osculating.rdot * Ux + osculating.rfdot * Vx) * vToKmPerSec;
+    const rdoty = (osculating.rdot * Uy + osculating.rfdot * Vy) * vToKmPerSec;
+    const rdotz = (osculating.rdot * Uz + osculating.rfdot * Vz) * vToKmPerSec;
+
+    return {r : [rx, ry, rz], v : [rdotx, rdoty, rdotz]};
 }
 
 function limitAngleTwoPi(rad) 

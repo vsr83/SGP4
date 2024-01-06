@@ -25,7 +25,8 @@ const sgp4Constants = {
  * @param {*} brouwer 
  * @returns 
  */
-export function sgp4Applicable(brouwer) {
+export function sgp4Applicable(brouwer) 
+{
     return (2.0 * Math.PI / brouwer.meanMotionBrouwer) < 225.0;
 }
 
@@ -393,4 +394,124 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
     M = L - omega - Omega;
 
     return {a : a, incl : kepler.incl, ecc : ecc, M : M, omega : omega, Omega : Omega, L : L};
+}
+
+/**
+ * Apply periodics to compute osculating elements.
+ * 
+ * @param {*} tle 
+ *      The TLE.
+ * @param {*} kepler 
+ *      The Keplerian elements after application of secular drag.
+ * @returns Osculating elements:
+ * - r : Distance from the geocenter (earth radii),
+ * - u : Sum of the natural anomaly and the argument of perigee (radians),
+ * - Omega : Longitude of the ascending node (radians),
+ * - incl : Inclination (radians)
+ * - rdot : Time derivative of r (earth radii / minute)
+ * - rfdot : Product of r and natural anomaly (earth radii * radians / minute).
+ */
+export function applyPeriodics(tle, kepler) 
+{
+    const A_30 = -sgp4Constants.j3;
+    const k2 = 0.5 * sgp4Constants.j2;
+    const beta = Math.sqrt(1 - kepler.ecc ** 2);
+    const i0 = deg2Rad(tle.inclination);
+    const theta = Math.cos(i0);
+
+    // The long-period periodics included in the SGP4 model only influence the
+    // mean longitude, eccentricity and the argument of perigee.
+
+    const factor = A_30 * Math.sin(kepler.incl) / (4 * k2 * kepler.a * beta * beta);
+    // Change in mean longitude due to long-period periodics.
+    const L = kepler.L + 0.5 * factor * kepler.ecc * Math.cos(kepler.omega)
+            * (3 + 5 * theta) / (1 + theta);
+    // Change in (e cos g) due to long-period periodics.
+    const axN = kepler.ecc * Math.cos(kepler.omega);
+    // Change in (e sin g) due to long-period periodics.
+    const ayN = kepler.ecc * Math.sin(kepler.omega) + factor;
+
+    // Start with longitude of perigee.
+    const U = limitAngleTwoPi(L - kepler.Omega);
+
+    // We solve Kepler's equation for E + omega with an iteration:
+    // Iteration parameters taken from [Vallado]
+    const maxIterations = 10;
+    const tolerance = 1.0e-12;
+
+    // oe should coverge to E + omega
+    let oe = U;
+    let delta = tolerance + 1;
+    let iter = 0;
+
+    while (iter <= maxIterations && delta > tolerance) 
+    {
+        delta = -(U - ayN * Math.cos(oe) + axN * Math.sin(oe) - oe)
+              / (ayN * Math.sin(oe) + axN * Math.cos(oe) - 1);
+
+        console.log(delta + " " + oe);
+
+        if (Math.abs(delta) >= 0.95)
+        {
+            delta = 0.95 * Math.sign(delta);
+        }
+        oe += delta;
+        iter++;
+    }
+
+    const ecosE = axN * Math.cos(oe) + ayN * Math.sin(oe);
+    const esinE = axN * Math.sin(oe) - ayN * Math.cos(oe);
+
+    // Eccentric anomaly.
+    const E = Math.atan2(esinE, ecosE);
+    // Eccentricity with long-term periodics.
+    const eL = Math.sqrt(axN * axN + ayN * ayN);
+    // Semi-latus rectum with long-term periodics. TBD: a
+    const pL = kepler.a * (1 - eL * eL);
+    // Distance from the ellipse focus to the satellite.
+    const r = kepler.a * (1 - eL * Math.cos(E)); 
+
+    // Perform anti-clockwise rotation of the point (a(cos E - e), bsin E) with the
+    // argument of perigee.
+    const cosu = (kepler.a / r) 
+               * (Math.cos(oe) - axN + ayN * esinE / (1 + Math.sqrt(1 - eL ** 2)));
+    const sinu = (kepler.a / r) 
+               * (Math.sin(oe) - ayN - axN * esinE / (1 + Math.sqrt(1 - eL ** 2)));
+    const u = Math.atan2(sinu, cosu);
+
+    const rdot = Math.sqrt(kepler.a) * esinE / r;
+    const rfdot = Math.sqrt(pL) / r;
+
+    const n = Math.pow(kepler.a, -1.5);
+
+    const sin2u = Math.sin(2 * u);
+    const cos2u = Math.cos(2 * u);
+
+    // Compute short period periodics.
+    const Deltar = 0.5 * k2 * (1 - theta ** 2) * cos2u / pL;
+    const Deltau = -0.25 * k2 * (7 * theta ** 2 - 1) * sin2u / (pL * pL);
+    const DeltaOmega = 1.5 * k2 * theta * sin2u / (pL * pL);
+    const Deltai = 1.5 * k2 * theta * Math.sin(kepler.incl) * cos2u / (pL * pL);
+    const Deltardot = - k2 * n * (1 - theta ** 2) * sin2u / pL;
+    const Deltarfdot = k2 * n * ((1 - theta ** 2) * cos2u 
+                     - 1.5 * (1 - 3 * theta ** 2)) / pL;                      
+
+    // Compute osculating elements.
+    const rk = r * (1 - 1.5 * k2 * Math.sqrt(1 - eL**2) * (3 * theta**2 - 1) / pL ** 2)
+             + Deltar;
+    const uk = u + Deltau;
+    const Omegak = kepler.Omega + DeltaOmega;
+    const ik = kepler.incl + Deltai;
+    const rdotk = rdot + Deltardot;
+    const rfdotk = rfdot + Deltarfdot;
+
+    return {
+        r : rk, u : uk, Omega : Omegak, incl : ik, rdot : rdotk, rfdot : rfdotk
+    };
+}
+
+function limitAngleTwoPi(rad) 
+{
+    const twoPi = 2 * Math.PI;
+    return rad - twoPi * Math.floor(rad / twoPi);
 }

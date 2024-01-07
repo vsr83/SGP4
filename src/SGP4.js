@@ -483,7 +483,7 @@ export function applyPeriodics(tle, kepler)
     let delta = tolerance + 1;
     let iter = 0;
 
-    while (iter <= maxIterations && delta > tolerance) 
+    while (iter <= maxIterations && Math.abs(delta) > tolerance) 
     {
         delta = -(U - ayN * Math.cos(oe) + axN * Math.sin(oe) - oe)
               / (ayN * Math.sin(oe) + axN * Math.cos(oe) - 1);

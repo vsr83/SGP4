@@ -395,8 +395,15 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
 
     } else {
         const deltaomega = tle.dragTerm * C3 * Math.cos(omegaEpoch) * deltaTime;
-        const deltaM = -(2/3) * qs4Term * tle.dragTerm * xi[4] / (eta[1] * ecc0)
+        let deltaM = -(2/3) * qs4Term * tle.dragTerm * xi[4] / (eta[1] * ecc0)
                      * (Math.pow(1 + eta[1] * Math.cos(kepler.M), 3) - Math.pow(1 + eta[1] * Math.cos(M0), 3)); 
+
+        // In the SGP4 implementation, the deltaM is ignored for very small eccentricities
+        // since it becomes numerically problematic in the above expression.
+        if (tle.eccentricity <= 1.0e-4) {
+            deltaM = 0;
+        }
+        
         // Not final mean anomaly.
         M = kepler.M + deltaomega + deltaM;
         omega = kepler.omega - deltaomega - deltaM;

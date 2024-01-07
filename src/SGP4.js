@@ -153,6 +153,7 @@ export function secularGravity(tle, brouwer)
  *   anomaly and mean longitude.
  * - qs4Term, s, xi, eta, beta0, theta: Precomputed terms to avoid recomputation with
  *   each time step.
+ * - useSimplifiedDrag: Flag indicating that simplified drag model should be used.
  */
 export function secularDrag(tle, brouwer)
 {
@@ -166,6 +167,13 @@ export function secularDrag(tle, brouwer)
 
     // Minimum distance at perigee (in Earth radii) [rp].
     const rPerigee = brouwer.semiMajorAxisBrouwer * (1.0 - tle.eccentricity);
+
+    // The SGP4 implementation uses simplified drag equations in the case if the
+    // perigee of the orbit less than 220 km above the Earth radii.
+    let useSimplifiedDrag = false;
+    if (rPerigee < 220.0 / sgp4Constants.radiusEarthKm + 1) {
+        useSimplifiedDrag = true;
+    }
 
     // Satellite altitude at perigee assuming ideal sphere (km) [perige].
     const perigeeAltitudeKm = (rPerigee - 1.0) * sgp4Constants.radiusEarthKm;
@@ -243,7 +251,7 @@ export function secularDrag(tle, brouwer)
 
     return {C1 : C1, C2 : C2, C3 : C3, C4 : C4, C5 : C5, D2 : D2, D3 : D3, D4 : D4, 
         t2cof : t2cof, t3cof : t3cof, t4cof : t4cof, t5cof : t5cof, qs4Term : qs4Term, s : s,
-        xi : xi, eta : eta, beta0 : beta0, theta : theta};
+        xi : xi, eta : eta, beta0 : beta0, theta : theta, useSimplifiedDrag : useSimplifiedDrag};
 }
 
 /**
@@ -346,7 +354,8 @@ export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime)
 export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime) 
 {
     const {C1, C2, C3, C4, C5, D2, D3, D4, qs4Term, s, 
-        t2cof, t3cof, t4cof, t5cof, xi, eta, beta0, theta} = dragTerms;
+        t2cof, t3cof, t4cof, t5cof, xi, eta, beta0, theta, 
+        useSimplifiedDrag} = dragTerms;
 
     // Mean anomaly at epoch (rad).
     const Mepoch = deg2Rad(tle.meanAnomaly);
@@ -363,29 +372,53 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
     const k2 = 0.5 * sgp4Constants.j2;
     const Bstar = tle.dragTerm;
 
-    const deltaomega = tle.dragTerm * C3 * Math.cos(omegaEpoch) * deltaTime;
-    const deltaM = -(2/3) * qs4Term * tle.dragTerm * xi[4] / (eta[1] * ecc0)
-                 * (Math.pow(1 + eta[1] * Math.cos(kepler.M), 3) - Math.pow(1 + eta[1] * Math.cos(M0), 3)); 
+    let M, omega, Omega, ecc, a, L;
 
-    // Not final mean anomaly.
-    let M = kepler.M + deltaomega + deltaM;
-    const omega = kepler.omega - deltaomega - deltaM;
-    const Omega = kepler.Omega - 10.5 * (n0 * k2 * theta[1])
-                / (a0[2] * beta0[2]) * C1[1] * dt[2];
-    const ecc = tle.eccentricity 
-              - Bstar * C4 * dt[1]
-              - Bstar * C5 * (Math.sin(M) - Math.sin(M0));
+    // Use simplified drag equations for targets with perigee less than 220 km above
+    // the Earth radius.
+    if (useSimplifiedDrag) {
+        // Not final mean anomaly.
+        M = kepler.M;
+        omega = kepler.omega;
+        Omega = kepler.Omega - 10.5 * (n0 * k2 * theta[1]) / (a0[2] * beta0[2]) * C1[1] * dt[2];
+        ecc = tle.eccentricity - Bstar * C4 * dt[1];
 
-    // From implementation by Vallado : Fix tolerance to avoid a divide by zero.
-    if (ecc < 1e-6) {
-        ecc = 1e-6;
+        // From implementation by Vallado : Fix tolerance to avoid a divide by zero.
+        if (ecc < 1e-6) {
+            ecc = 1e-6;
+        }
+        const nm = brouwer.meanMotionBrouwer;
+        a = Math.pow(sgp4Constants.xke / nm, 2/3) * Math.pow(1 - C1[1] * dt[1], 2);
+                    
+        // Mean longitude.
+        L = M + omega + Omega + n0 * (t2cof * dt[2]);
+
+    } else {
+        const deltaomega = tle.dragTerm * C3 * Math.cos(omegaEpoch) * deltaTime;
+        const deltaM = -(2/3) * qs4Term * tle.dragTerm * xi[4] / (eta[1] * ecc0)
+                     * (Math.pow(1 + eta[1] * Math.cos(kepler.M), 3) - Math.pow(1 + eta[1] * Math.cos(M0), 3)); 
+        // Not final mean anomaly.
+        M = kepler.M + deltaomega + deltaM;
+        omega = kepler.omega - deltaomega - deltaM;
+        Omega = kepler.Omega - 10.5 * (n0 * k2 * theta[1])
+                    / (a0[2] * beta0[2]) * C1[1] * dt[2];
+        ecc = tle.eccentricity 
+                - Bstar * C4 * dt[1]
+                - Bstar * C5 * (Math.sin(M) - Math.sin(M0));
+
+        // From implementation by Vallado : Fix tolerance to avoid a divide by zero.
+        if (ecc < 1e-6) {
+            ecc = 1e-6;
+        }
+        const nm = brouwer.meanMotionBrouwer;
+        a = Math.pow(sgp4Constants.xke / nm, 2/3) * Math.pow(
+            1 - C1[1] * dt[1] - D2 * dt[2] - D3 * dt[3] - D4 * dt[4], 2);
+                    
+        // Mean longitude.
+        L = M + omega + Omega 
+            + n0 * (t2cof * dt[2] + t3cof * dt[3] + t4cof * dt[4] + t5cof * dt[5]);
     }
-    const a = a0[1] * Math.pow(
-        1 - C1[1] * dt[1] - D2 * dt[2] - D3 * dt[3] - D4 * dt[4], 2);
 
-    // Mean longitude.
-    let L = M + omega + Omega 
-          + n0 * (t2cof * dt[2] + t3cof * dt[3] + t4cof * dt[4] + t5cof * dt[5]);
     L = L % (2 * Math.PI);
 
     // The mean anomaly in [2] is inconsistent with the SGP4 implementations, where
@@ -522,17 +555,17 @@ export function applyPeriodics(tle, kepler)
 }
 
 /**
- * Convert osculating elements to the J2000 frame.
+ * Convert osculating elements to the TEME frame.
  * 
  * References:
  * [1] Hoots, Roehrich - Spacetrack Report No. 3
  * 
  * @param {*} osculating The osculating elements with the short-period periodics.
  * @return Orbit state vector with 
- * - r: Position vector in J2000 frame in km.
- * - v: Velocity vector in J2000 frame in km/s
+ * - r: Position vector in TEME frame in km.
+ * - v: Velocity vector in TEME frame in km/s
  */
-export function osculatingToJ2000(osculating) {
+export function osculatingToTeme(osculating) {
     // To get the position, we compute the matrix product:
     // R_z(-\Omega)R_x(-i)R_z(-omega)*[r cos f, r sin f, 0].
     // This can be written with the substitution u = f + omega to the format

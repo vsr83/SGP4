@@ -20,14 +20,16 @@ export function computeDeepCommon(tle, brouwer)
 {
     // Longitude of ascending node for the Sun.
     const Omegas = 0;
-    // Argument of perihelion for the Sun (rad).
-    const omegas = deg2Rad(281.2208);
+    // Argument of perihelion for the Sun (rad). Extra decimals have been added
+    // to imporive agreement with the reference implementation.
+    const omegas = deg2Rad(281.2208026160437);
     // Solar perturbation coefficient (rad/min).
     const Cs = 2.98647972e-6;
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
-    // Solar inclination (rad).
-    const Is = deg2Rad(23.4441);
+    // Solar inclination (rad). Extra decimals have been added to improve 
+    // agreement with the reference implementation.
+    const Is = deg2Rad(23.444100086478358);
 
     // RA of ascending node of the satellite at epoch (rad).
     const Omega0 = deg2Rad(tle.raAscNode);
@@ -39,13 +41,19 @@ export function computeDeepCommon(tle, brouwer)
     // 1899-12-31 12:00:00 or "0.5" January 1900
     const day1900 = tle.jtUt1Epoch - 2415020.0;
     // Mean longitude of Moon's ascending node w.r.t. ecliptic 
-    const OmegamEcl = 4.5236020 - 9.2422029e-4 * day1900;
+    const OmegamEcl = (4.5236020 - 9.2422029e-4 * day1900) % (2 * Math.PI);
     // The lunar longitude of perigee referred to the ecliptic.
-    const lambdamEcl =  5.8351514 + 0.0019443680 * day1900;
+    const lambdaEcl =  5.8351514 + 0.0019443680 * day1900;
 
     // Moon's inclination w.r.t. ecliptic
-    const ImEcl = deg2Rad(5.145396374); 
-    // Solve Moon's inclination w.r.t. equator.
+    //const ImEcl = deg2Rad(5.145396374); 
+    const ImEcl = deg2Rad(5.145400276825767);
+
+    // Solve Moon's inclination w.r.t. equator. The reference implementation
+    // contains precomputed values for everything except the OmegamEcl term
+    // with rather small number of decimal places. Thus, the following 
+    // will introduce small error to the computation w.r.t. the reference
+    // implementation.
     const cosIm = Math.cos(Is) * Math.cos(ImEcl) 
                 - Math.sin(Is) * Math.sin(ImEcl) * Math.cos(OmegamEcl);
     const sinIm = Math.sqrt(1 - cosIm ** 2);
@@ -63,9 +71,8 @@ export function computeDeepCommon(tle, brouwer)
 
     // Solve argument of perigee w.r.t. equator.
     const omegam = lambdaEcl - OmegamEcl + Delta;
-
-    const coeffSun = computeCoeffs(tle.ecc, I0, omega0, Omega0, Is, omegas, Omegas);
-    const coeffMoon = computeCoeffs(tle.ecc, I0, omega0, Omega0, Im, omegam, Omegam);
+    const coeffSun = computeCoeffs(tle.eccentricity, I0, omega0, Omega0, Is, omegas, Omegas);
+    const coeffMoon = computeCoeffs(tle.eccentricity, I0, omega0, Omega0, Im, omegam, Omegam);
 
     return {sun : coeffSun, moon : coeffMoon};
 }
@@ -156,15 +163,18 @@ function computeCoeffs(e0, I0, omega0, Omega0, Ix, omegax, Omegax)
  * @param {BrouwerElements} brouwer 
  *      Brouwer elements.
  */
-export function computeResonanceCoeffs(brouwer, tle) 
+export function computeResonanceCoeffs(tle, brouwer) 
 {
     // Initialize resonance type.
     let resonanceType = RESONANCE_TYPE.NO_RESONANCE;
+
+    let coeffs;
 
     // Period is between 1200 and 1800 minutes. 
     if (brouwer.meanMotionBrouwer > 0.0034906585 && 
         brouwer.meanMotionBrouwer < 0.0052359877) {
             resonanceType = RESONANCE_TYPE.ONE_DAY_RESONANCE;
+            coeffs = computeOneDayResonanceCoeffs(tle, brouwer);
     }
     // Period is between 680 and 760 minutes. 2 * pi / 760 = 0.008267349
     // However, we follow the limits used by the Vallado implementation
@@ -173,7 +183,10 @@ export function computeResonanceCoeffs(brouwer, tle)
         brouwer.meanMotionBrouwer <= 9.24e-3 &&
         tle.eccentricity >= 0.5) {
             resonanceType = RESONANCE_TYPE.HALF_DAY_RESONANCE;
+            coeffs = computeHalfDayResonanceCoeffs(tle, brouwer);
     }
+
+    return {type : resonanceType, coeffs : coeffs };
 }
 
 /**
@@ -210,7 +223,7 @@ function computeOneDayResonanceCoeffs(tle, brouwer)
     const G300 = 1 - 6 * (e0 ** 2) + 6.60937 * (e0 ** 4);
 
     const delta1 = 3.0 * (n0 ** 2) / (a0 ** 3) * F311 * G310 * Q31;
-    const delta2 = 6.0 * (n0 ** 2) / (a0 ** 2) * F220 * G200 * Q22;
+    const delta2 = 6.0 * (n0 ** 2) / (a0 ** 2) * F220 * G200 * Q32;
     const delta3 = 9.0 * (n0 ** 2) / (a0 ** 3) * F330 * G300 * Q33;
 
     return {delta1 : delta1, delta2 : delta2, delta3 : delta3};
@@ -301,8 +314,9 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const CS52 = 1.1428639e-7;
     const CS54 = 2.1765803e-9;
 
-    // Semi-major axis (Earth radii).
+    // Brouwer mean motion (radians / minute).
     const n0 = brouwer.meanMotionBrouwer;
+    // Semi-major axis (Earth radii).
     const a0 = brouwer.semiMajorAxisBrouwer;
     const factor = 3 * (n0 * n0) / (a0);
 

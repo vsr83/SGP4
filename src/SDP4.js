@@ -1,5 +1,8 @@
 import { deg2Rad, createExp } from "./MathUtils.js";
 
+/**
+ * Enumeration for the resonance type.
+ */
 export const RESONANCE_TYPE = {
     NO_RESONANCE : 1,
     ONE_DAY_RESONANCE : 2,
@@ -9,6 +12,15 @@ export const RESONANCE_TYPE = {
 /**
  * Compute common secular perturbation coefficients for the deep space 
  * processing in SDP4.
+ * 
+ * References:
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
  * 
  * @param {Tle} tle 
  *      The TLE. 
@@ -21,14 +33,14 @@ export function computeDeepCommon(tle, brouwer)
     // Longitude of ascending node for the Sun.
     const Omegas = 0;
     // Argument of perihelion for the Sun (rad). Extra decimals have been added
-    // to imporive agreement with the reference implementation.
+    // to imporive agreement with the reference implementation [2].
     const omegas = deg2Rad(281.2208026160437);
     // Solar perturbation coefficient (rad/min).
     const Cs = 2.98647972e-6;
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
     // Solar inclination (rad). Extra decimals have been added to improve 
-    // agreement with the reference implementation.
+    // agreement with the reference implementation [2].
     const Is = deg2Rad(23.444100086478358);
 
     // RA of ascending node of the satellite at epoch (rad).
@@ -79,6 +91,13 @@ export function computeDeepCommon(tle, brouwer)
 
 /**
  * Compute secular perturbation coefficients for the Sun or the Moon.
+ * 
+ * References:
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
  * 
  * @param {number} e0 
  *      Eccentricity of the satellite at epoch (rad).
@@ -158,6 +177,15 @@ function computeCoeffs(e0, I0, omega0, Omega0, Ix, omegax, Omegax)
  * Compute coefficients required by time integration of resonance effects
  * of Earth gravity.
  * 
+ * References:
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
+ * 
  * @param {Tle} tle 
  *      TLE for the satellite.
  * @param {BrouwerElements} brouwer 
@@ -167,7 +195,6 @@ export function computeResonanceCoeffs(tle, brouwer)
 {
     // Initialize resonance type.
     let resonanceType = RESONANCE_TYPE.NO_RESONANCE;
-
     let coeffs;
 
     // Period is between 1200 and 1800 minutes. 
@@ -177,8 +204,8 @@ export function computeResonanceCoeffs(tle, brouwer)
             coeffs = computeOneDayResonanceCoeffs(tle, brouwer);
     }
     // Period is between 680 and 760 minutes. 2 * pi / 760 = 0.008267349
-    // However, we follow the limits used by the Vallado implementation
-    // to ensure compability.
+    // However, we follow the limits used by the reference implementation 
+    // [2] to ensure compability.
     if (brouwer.meanMotionBrouwer >= 8.26e-3 && 
         brouwer.meanMotionBrouwer <= 9.24e-3 &&
         tle.eccentricity >= 0.5) {
@@ -192,6 +219,13 @@ export function computeResonanceCoeffs(tle, brouwer)
 /**
  * Compute coefficients required by time integration for orbits in the 
  * 1-day period band.
+ * 
+ * References:
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
  * 
  * @param {Tle} tle 
  *      TLE for the satellite.
@@ -233,6 +267,15 @@ function computeOneDayResonanceCoeffs(tle, brouwer)
  * Compute coefficients required by time integration for orbits in the 
  * 0.5-day period band.
  * 
+ * References:
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
+ * 
  * @param {Tle} tle 
  *      TLE for the satellite.
  * @param {BrouwerElements} brouwer 
@@ -249,7 +292,7 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const sinI0 = Math.sin(I0);
     const sinI02 = sinI0 * sinI0;
     const cosI0 = Math.cos(I0);
-    const cosI02 = Math.cos(I02);
+    const cosI02 = cosI0 * cosI0;
 
     // The following constants have been copy-pasted from the reference 
     // implementation by Vallado.
@@ -318,18 +361,20 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const n0 = brouwer.meanMotionBrouwer;
     // Semi-major axis (Earth radii).
     const a0 = brouwer.semiMajorAxisBrouwer;
-    const factor = 3 * (n0 * n0) / (a0);
+    const factor = 3 * (n0 * n0);
 
-    const D2201 = factor * CS22 * F220 * G201;
-    const D2211 = factor * CS22 * F221 * G211;
-    const D3210 = factor * CS32 * F321 * G310;
-    const D3222 = factor * CS32 * F322 * G322;
-    const D4410 = factor * CS44 * F441 * G410;
-    const D4422 = factor * CS44 * F442 * G422;
-    const D5220 = factor * CS52 * F522 * G520;
-    const D5232 = factor * CS52 * F523 * G532;
-    const D5421 = factor * CS54 * F542 * G521;
-    const D5433 = factor * CS54 * F543 * G533;
+    // For D4410, D4422, D5421 and D5433, the reference implementation [2]
+    // seems to be inconsistent with [1].
+    const D2201 = (factor / a0 ** 2) * CS22 * F220 * G201;
+    const D2211 = (factor / a0 ** 2) * CS22 * F221 * G211;
+    const D3210 = (factor / a0 ** 3) * CS32 * F321 * G310;
+    const D3222 = (factor / a0 ** 3) * CS32 * F322 * G322;
+    const D4410 = 2.0 * (factor / a0 ** 4) * CS44 * F441 * G410;
+    const D4422 = 2.0 * (factor / a0 ** 4) * CS44 * F442 * G422;
+    const D5220 = (factor / a0 ** 5) * CS52 * F522 * G520;
+    const D5232 = (factor / a0 ** 5) * CS52 * F523 * G532;
+    const D5421 = 2.0 * (factor / a0 ** 5) * CS54 * F542 * G521;
+    const D5433 = 2.0 * (factor / a0 ** 5) * CS54 * F543 * G533;
 
     return {D2201 : D2201, D2211 : D2211, D3210 : D3210, D3222 : D3222, 
             D4410 : D4410, D4422 : D4422, D5220 : D5220, D5232 : D5232, 

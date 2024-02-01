@@ -26,7 +26,8 @@ export const RESONANCE_TYPE = {
  *      The TLE. 
  * @param {BrouwerElements} brouwer
  *      The Brouwer elements. 
- * @return {Object} JSON with coefficients for the Moon and the Sun.
+ * @return {Object} JSON with coefficients for the Moon and the Sun and the 
+ * summed secular perturbation rates from both bodies.
  */
 export function computeDeepCommon(tle, brouwer) 
 {
@@ -39,6 +40,8 @@ export function computeDeepCommon(tle, brouwer)
     const Cs = 2.98647972e-6;
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
+    // Lunar mean motion (rad/min).
+    const nm = 1.5835218e-4;
     // Solar inclination (rad). Extra decimals have been added to improve 
     // agreement with the reference implementation [2].
     const Is = deg2Rad(23.444100086478358);
@@ -49,6 +52,11 @@ export function computeDeepCommon(tle, brouwer)
     const I0 = deg2Rad(tle.inclination);
     // Argument of perigee of the satellite orbit at epoch (rad).
     const omega0 = deg2Rad(tle.argPerigee);
+    // Eccentricity of the satellite orbit at epoch.
+    const e0 = tle.eccentricity;
+    // Brouwer mean motion (radians / minute).
+    const n0 = brouwer.meanMotionBrouwer;
+    const eta0 = Math.sqrt(1 - e0 * e0);
 
     // 1899-12-31 12:00:00 or "0.5" January 1900
     const day1900 = tle.jtUt1Epoch - 2415020.0;
@@ -62,10 +70,9 @@ export function computeDeepCommon(tle, brouwer)
     const ImEcl = deg2Rad(5.145400276825767);
 
     // Solve Moon's inclination w.r.t. equator. The reference implementation
-    // contains precomputed values for everything except the OmegamEcl term
-    // with rather small number of decimal places. Thus, the following 
-    // will introduce small error to the computation w.r.t. the reference
-    // implementation.
+    // [2] contains precomputed values for everything except the OmegamEcl 
+    // term with rather small number of decimal places. Thus, the following 
+    // will introduce small error to the computation w.r.t. [2].
     const cosIm = Math.cos(Is) * Math.cos(ImEcl) 
                 - Math.sin(Is) * Math.sin(ImEcl) * Math.cos(OmegamEcl);
     const sinIm = Math.sqrt(1 - cosIm ** 2);
@@ -83,10 +90,43 @@ export function computeDeepCommon(tle, brouwer)
 
     // Solve argument of perigee w.r.t. equator.
     const omegam = lambdaEcl - OmegamEcl + Delta;
-    const coeffSun = computeCoeffs(tle.eccentricity, I0, omega0, Omega0, Is, omegas, Omegas);
-    const coeffMoon = computeCoeffs(tle.eccentricity, I0, omega0, Omega0, Im, omegam, Omegam);
+    const coeffSun = computeCoeffs(e0, I0, omega0, Omega0, Is, omegas, Omegas);
+    const coeffMoon = computeCoeffs(e0, I0, omega0, Omega0, Im, omegam, Omegam);
 
-    return {sun : coeffSun, moon : coeffMoon};
+    // Compute third body secular rates from the Sun and the Moon.
+    const deSdt = -15 * Cs * ns * e0 / n0 * (coeffSun.X1 * coeffSun.X3 + coeffSun.X2 * coeffSun.X4);
+    const deMdt = -15 * Cs * nm * e0 / n0 * (coeffMoon.X1 * coeffMoon.X3 + coeffMoon.X2 * coeffMoon.X4);
+    const dIsdt = - 0.5 * Cs * ns / eta0 / n0 * (coeffSun.Z11 + coeffSun.Z13);
+    const dImdt = - 0.5 * Cm * nm / eta0 / n0 * (coeffMoon.Z11 + coeffMoon.Z13);
+    const dMsdt = -Cs * ns / n0 * (coeffSun.Z1 + coeffSun.Z3 - 14 - 6 * e0 * e0);
+    const dMmdt = -Cm * nm / n0 * (coeffMoon.Z1 + coeffMoon.Z3 - 14 - 6 * e0 * e0);
+
+    let dOmegasdt, dOmegamdt;
+    if (tle.inclination < 3.0) {
+        dOmegasdt = 0.0;
+        dOmegamdt = 0.0;
+    } else {
+        dOmegasdt = Cs * ns / (2.0 * n0 * eta0 * Math.sin(I0)) * (coeffSun.Z21 + coeffSun.Z23);
+        dOmegamdt = Cm * nm / (2.0 * n0 * eta0 * Math.sin(I0)) * (coeffMoon.Z21 + coeffMoon.Z23);
+    }
+    const domegasdt = Cs * ns * eta0 / n0 * (coeffSun.Z31 - coeffSun.Z33 - 6) - dOmegasdt;
+    const domegamdt = Cm * nm * eta0 / n0 * (coeffMoon.Z31 - coeffMoon.Z33 - 6) - dOmegamdt;
+
+    // Sum contributions from the Moon and the Sun
+    const secularRates = {
+        dedt : deSdt + deMdt,
+        dIdt : dIsdt + dImdt,
+        dMdt : dMsdt + dMmdt,
+        dOmegadt : dOmegasdt + dOmegamdt,
+        domegadt : domegasdt + domegamdt
+    };
+
+    return {sun : coeffSun, moon : coeffMoon, secularRates : secularRates};
+}
+
+function computeThirdBodySecularRates(tle, coeffSun, coeffMoon) {
+    let dedt = 0;
+
 }
 
 /**
@@ -376,7 +416,45 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const D5421 = 2.0 * (factor / a0 ** 5) * CS54 * F542 * G521;
     const D5433 = 2.0 * (factor / a0 ** 5) * CS54 * F543 * G533;
 
+    const M0 = deg2Rad(tle.meanAnomaly);
+    const Omega0 = deg2Rad(tle.raAscNode);
+    const theta0 = gstime(tle.jtUt1Epoch)
+
+    const lambda0 = M0 + 2 * Omega0 - 2 * theta0;
+    //const lambdaDot0 = 
+
+    // rec->xlamo = fmod(rec->mo + rec->nodeo + rec->nodeo - theta - theta, twopi);
+    //rec->xfact = rec->mdot + rec->dmdt + 2.0 * (rec->nodedot + rec->dnodt - rptim) - rec->no_unkozai;
+
+
+
     return {D2201 : D2201, D2211 : D2211, D3210 : D3210, D3222 : D3222, 
             D4410 : D4410, D4422 : D4422, D5220 : D5220, D5232 : D5232, 
             D5421 : D5421, D5433 : D5433};
+}
+
+/**
+ * 
+ * @param {*} brouwer
+ * @param {*} resonanceCoeffs 
+ * @param {*} timeSinceEpoch 
+ * @param {*} integrationState
+ */
+export function deepSpace(brouwer, resonanceCoeffs, timeSinceEpoch, integrationState) {
+
+    if (resonanceCoeffs.resonanceType != RESONANCE_TYPE.NO_RESONANCE) {
+        const resonanceInitial = 
+
+        if ((integrationState === undefined) || (integrationState === null)) {
+            integrationState = {
+                timeMinsAfterEpoch : 0.0,
+                meanMotion : brouwer.meanMotionBrouwer,
+                resonanceVar : resonanceInitial 
+            };
+        }
+    }
+}
+
+export function applyPeriodicsSdp4() {
+
 }

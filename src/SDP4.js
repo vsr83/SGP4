@@ -94,13 +94,17 @@ export function computeDeepCommon(tle, brouwer)
     const coeffMoon = computeCoeffs(e0, I0, omega0, Omega0, Im, omegam, Omegam);
 
     // Compute third body secular rates from the Sun and the Moon.
+    // Eccentricity rate for the Sun and the Moon (1 / min).
     const deSdt = -15 * Cs * ns * e0 / n0 * (coeffSun.X1 * coeffSun.X3 + coeffSun.X2 * coeffSun.X4);
     const deMdt = -15 * Cs * nm * e0 / n0 * (coeffMoon.X1 * coeffMoon.X3 + coeffMoon.X2 * coeffMoon.X4);
+    // Inclination rate for the Sun and the Moon (rads / min).
     const dIsdt = - 0.5 * Cs * ns / eta0 / n0 * (coeffSun.Z11 + coeffSun.Z13);
     const dImdt = - 0.5 * Cm * nm / eta0 / n0 * (coeffMoon.Z11 + coeffMoon.Z13);
+    // Mean anomaly rate for the Sun and the Moon (rads / min).
     const dMsdt = -Cs * ns / n0 * (coeffSun.Z1 + coeffSun.Z3 - 14 - 6 * e0 * e0);
     const dMmdt = -Cm * nm / n0 * (coeffMoon.Z1 + coeffMoon.Z3 - 14 - 6 * e0 * e0);
 
+    // Longitude of ascending node rate for the Sun and the Moon (rads / min).
     let dOmegasdt, dOmegamdt;
     if (tle.inclination < 3.0) {
         dOmegasdt = 0.0;
@@ -109,10 +113,11 @@ export function computeDeepCommon(tle, brouwer)
         dOmegasdt = Cs * ns / (2.0 * n0 * eta0 * Math.sin(I0)) * (coeffSun.Z21 + coeffSun.Z23);
         dOmegamdt = Cm * nm / (2.0 * n0 * eta0 * Math.sin(I0)) * (coeffMoon.Z21 + coeffMoon.Z23);
     }
+    // Argument of perigee rate (rads / min).
     const domegasdt = Cs * ns * eta0 / n0 * (coeffSun.Z31 - coeffSun.Z33 - 6) - dOmegasdt;
     const domegamdt = Cm * nm * eta0 / n0 * (coeffMoon.Z31 - coeffMoon.Z33 - 6) - dOmegamdt;
 
-    // Sum contributions from the Moon and the Sun
+    // Sum the rate contributions from the Moon and the Sun:
     const secularRates = {
         dedt : deSdt + deMdt,
         dIdt : dIsdt + dImdt,
@@ -122,11 +127,6 @@ export function computeDeepCommon(tle, brouwer)
     };
 
     return {sun : coeffSun, moon : coeffMoon, secularRates : secularRates};
-}
-
-function computeThirdBodySecularRates(tle, coeffSun, coeffMoon) {
-    let dedt = 0;
-
 }
 
 /**
@@ -251,7 +251,7 @@ export function computeResonanceCoeffs(tle, brouwer)
         tle.eccentricity >= 0.5) {
             resonanceType = RESONANCE_TYPE.HALF_DAY_RESONANCE;
             coeffs = computeHalfDayResonanceCoeffs(tle, brouwer);
-    }
+    }    
 
     return {type : resonanceType, coeffs : coeffs };
 }
@@ -389,7 +389,6 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const F543 = 29.53125 * sinI0 * (-2.0 - 8.0 * cosI0 + cosI02 *
         (12.0 + 8.0 * cosI0 - 10.0 * cosI02));
 
-
     // CSmn = sqrt(C_mn^2 + S_mn^2)
     const CS22 = 1.7891679e-6;
     const CS32 = 3.7393792e-7;
@@ -416,45 +415,129 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
     const D5421 = 2.0 * (factor / a0 ** 5) * CS54 * F542 * G521;
     const D5433 = 2.0 * (factor / a0 ** 5) * CS54 * F543 * G533;
 
-    const M0 = deg2Rad(tle.meanAnomaly);
-    const Omega0 = deg2Rad(tle.raAscNode);
-    const theta0 = gstime(tle.jtUt1Epoch)
-
-    const lambda0 = M0 + 2 * Omega0 - 2 * theta0;
-    //const lambdaDot0 = 
-
-    // rec->xlamo = fmod(rec->mo + rec->nodeo + rec->nodeo - theta - theta, twopi);
-    //rec->xfact = rec->mdot + rec->dmdt + 2.0 * (rec->nodedot + rec->dnodt - rptim) - rec->no_unkozai;
-
-
-
     return {D2201 : D2201, D2211 : D2211, D3210 : D3210, D3222 : D3222, 
             D4410 : D4410, D4422 : D4422, D5220 : D5220, D5232 : D5232, 
             D5421 : D5421, D5433 : D5433};
 }
 
 /**
+ * Compute initial condition for the time integration of resonance effects of 
+ * Earth gravity.
  * 
+ * @param {*} tle
+ *      The TLE. 
+ * @param {*} secularSunMoon 
+ *      The secular perturbations from the third-body effects of the Sun and 
+ *      the Moon.
+ * @param {*} secularGravity 
+ *      The secular perturbations from the spherical harmonics in Earth's 
+ *      gravitational potential.
+ * @param {*} resonanceType 
+ *      The resonance type.
+ * @returns The initial condition for the auxiliary variable.
+ */
+export function computeInitialCondition(tle, secularSunMoon, secularGravity, resonanceType) 
+{
+    const M0 = deg2Rad(tle.meanAnomaly);
+    const Omega0 = deg2Rad(tle.raAscNode);
+    const theta0 = gstime(tle.jtUt1Epoch)
+
+    // Time derivative of the Greenwich sidereal time. 
+    // (360 / 86164.098903691) * 60 * pi / 180
+    dthetadt = 4.37526908801129966e-3;
+
+    let lambda, dlambdadt, n;
+    if (resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
+    {
+        lambda = (M0 + 2 * Omega0 - 2 * theta0) % (2.0 * Math.PI);
+        dlambdadt = secularGravity.MDot + secularSunMoon.dMdt
+                    + 2.0 * (secularGravity.OmegaDot + secularSunMoon.dOmegadt - dthetadt);
+        n = brouwer.meanMotionBrouwer;
+    } 
+    else if (resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+    {
+        lambda = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
+        dlambdadt = secularGravity.MDot + secularRatesSunMoon.dMdt
+                   + secularGravity.OmegaDot + secularSunMoon.dOmegadt 
+                   + secularGravity.omegaDot + secularSunMoon.domegadt - dthetadt;
+        n = brouwer.meanMotionBrouwer;
+    } 
+
+    return {
+        minsAfterEpoch : 0,
+        lambda : lambda, 
+        dlambdadt : dlambdadt,
+        n : n
+    };
+}
+
+/**
+ * Apply secular perturbations 
+ * 
+ * @param {*} kepler 
+ *      The Keplerian elements.
+ * @param {*} thirdBodyRates 
+ *      Third body rates for the Keplerian elements.
+ * @param {*} tSince
+ *      Time since the epoch (minutes).
+ * @returns Keplerian elements after application.
+ */
+export function applyThirdBodyPerturbations(kepler, thirdBodyRates, tSince) 
+{
+    return {
+        a     : kepler.a,
+        incl  : kepler.incl  + tSince * thirdBodyRates.dIdt,
+        ecc   : kepler.ecc   + tSince * thirdBodyRates.dedt,
+        M     : kepler.M     + tSince * thirdBodyRates.dMdt,
+        omega : kepler.omega + tSince * thirdBodyRates.domegadt,
+        Omega : kepler.Omega + tSince * thirdBodyRates.dOmegadt
+    };
+}
+
+/**
+ * 
+ * 
+ * @param {*} tle
  * @param {*} brouwer
  * @param {*} resonanceCoeffs 
- * @param {*} timeSinceEpoch 
+ * @param {*} kepler
+ * @param {*} minsAfterEpoch 
  * @param {*} integrationState
  */
-export function deepSpace(brouwer, resonanceCoeffs, timeSinceEpoch, integrationState) {
+export function integrate(tle, brouwer, resonanceCoeffs, kepler, minsAfterEpoch, integrationState) 
+{
+    // 12-hour timestep.
+    let timeStep = 720.0;
+    let timeStep2 = timeStep * timeStep;
 
-    if (resonanceCoeffs.resonanceType != RESONANCE_TYPE.NO_RESONANCE) {
-        const resonanceInitial = 
+    if (minsAfterEpoch < 0.0) 
+    {
+        timeStep = - timeStep;
+    }
 
-        if ((integrationState === undefined) || (integrationState === null)) {
-            integrationState = {
-                timeMinsAfterEpoch : 0.0,
-                meanMotion : brouwer.meanMotionBrouwer,
-                resonanceVar : resonanceInitial 
-            };
+    const G22 = 5.7686396;
+    const G32 = 0.95240898;
+    const G44 = 1.8014998;
+    const G52 = 1.0508330;
+    const G54 = 4.4108898;
+    const lambda2 = 0.13130908;
+    const lambda4 = 2.8843198;
+    const lambda6 = 0.37448087;
+
+    while (Math.abs(integrationState.minsAfterEpoch - tSince) >= Math.abs(timeStep)) 
+    {
+        if (resonanceCoeffs.resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+        {
+            let lambda_i = n_i + dlambdad0
+        }
+        else if (resonanceCoeffs.resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE)
+        {
+
         }
     }
 }
 
-export function applyPeriodicsSdp4() {
+export function applyPeriodicsSdp4() 
+{
 
 }

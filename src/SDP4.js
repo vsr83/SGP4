@@ -449,25 +449,34 @@ export function computeInitialCondition(tle, secularSunMoon, secularGravity, res
     let lambda, dlambdadt, n;
     if (resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
     {
-        lambda = (M0 + 2 * Omega0 - 2 * theta0) % (2.0 * Math.PI);
-        dlambdadt = secularGravity.MDot + secularSunMoon.dMdt
+        lambda0 = (M0 + 2 * Omega0 - 2 * theta0) % (2.0 * Math.PI);
+        dlambdadt0 = secularGravity.MDot + secularSunMoon.dMdt
                     + 2.0 * (secularGravity.OmegaDot + secularSunMoon.dOmegadt - dthetadt);
-        n = brouwer.meanMotionBrouwer;
+        // SDP4 reference implementation contains -rec->no_unkozai corresponding to
+        // -n additional term in the dlambdadt
+        n0 = brouwer.meanMotionBrouwer;
     } 
     else if (resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
     {
-        lambda = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
-        dlambdadt = secularGravity.MDot + secularRatesSunMoon.dMdt
+        // xlamo
+        lambda0 = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
+        // xfact
+        dlambdadt0 = secularGravity.MDot + secularRatesSunMoon.dMdt
                    + secularGravity.OmegaDot + secularSunMoon.dOmegadt 
                    + secularGravity.omegaDot + secularSunMoon.domegadt - dthetadt;
-        n = brouwer.meanMotionBrouwer;
+        n0 = brouwer.meanMotionBrouwer;
     } 
 
     return {
-        minsAfterEpoch : 0,
-        lambda : lambda, 
-        dlambdadt : dlambdadt,
-        n : n
+        minsAfterEpoch : 0.0,
+        lambda         : lambda0,
+        lambda0        : lambda0, 
+        dlambdadt      : dlambdadt0,
+        dlambdadt0     : dlambdadt0,
+        n              : n0,
+        n0             : n0,
+        dndt           : dndt0,
+        dndt0          : ndot0
     };
 }
 
@@ -490,21 +499,33 @@ export function applyThirdBodyPerturbations(kepler, thirdBodyRates, tSince)
         ecc   : kepler.ecc   + tSince * thirdBodyRates.dedt,
         M     : kepler.M     + tSince * thirdBodyRates.dMdt,
         omega : kepler.omega + tSince * thirdBodyRates.domegadt,
-        Omega : kepler.Omega + tSince * thirdBodyRates.dOmegadt
+        Omega : kepler.Omega + tSince * thirdBodyRates.dOmegadt,
+        n     : kepler.n
     };
 }
 
 /**
+ * Perform the time integration of resonance effects of Earth gravity.
  * 
- * 
- * @param {*} tle
- * @param {*} brouwer
- * @param {*} resonanceCoeffs 
+ * @param {Tle} tle 
+ *      TLE for the satellite.
+ * @param {BrouwerElements} brouwer 
+ *      Brouwer elements.
+ * @param {*} coeffs 
+ *      Resonance coefficients.
+ * @param {*} secularGravity
+ *      Rates secular perturbations due to harmonics in Earth's gravitational potential.
  * @param {*} kepler
+ *      Keplerian elements after application of secular perturbations.
  * @param {*} minsAfterEpoch 
- * @param {*} integrationState
+ *      Integration end time (minutes after TLE epoch.)
+ * @param {*} state
+ *      Integration state.
+ * @return {Object} JSON with:
+ *      n : Updated mean motion (radians / min).
+ *      M : Mean mean anomaly (radians).
  */
-export function integrate(tle, brouwer, resonanceCoeffs, kepler, minsAfterEpoch, integrationState) 
+export function integrateResonances(tle, brouwer, coeffs, secularGravity, kepler, minsAfterEpoch, state) 
 {
     // 12-hour timestep.
     let timeStep = 720.0;
@@ -520,21 +541,87 @@ export function integrate(tle, brouwer, resonanceCoeffs, kepler, minsAfterEpoch,
     const G44 = 1.8014998;
     const G52 = 1.0508330;
     const G54 = 4.4108898;
-    const lambda2 = 0.13130908;
-    const lambda4 = 2.8843198;
-    const lambda6 = 0.37448087;
+    const lambda31 = 0.13130908;
+    const lambda22 = 2.8843198;
+    const lambda33 = 0.37448087;
 
-    while (Math.abs(integrationState.minsAfterEpoch - tSince) >= Math.abs(timeStep)) 
+    while (Math.abs(state.minsAfterEpoch - tSince) >= Math.abs(timeStep)) 
     {
-        if (resonanceCoeffs.resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+        if (coeffs.resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
         {
-            let lambda_i = n_i + dlambdad0
+            state.dndt = coeffs.delta1 * Math.sin(state.lambda - lambda31)
+                       + coeffs.delta2 * Math.sin(2 * (state.lambda - lambda22))
+                       + coeffs.delta3 * Math.sin(3 * (state.lambda - lambda33));
+            state.dlambdadt = state.n + state.dlambdadt0;
+            state.dnddt = coeffs.delta1 * Math.cos(state - lambda31)
+                        + coeffs.delta2 * Math.cos(2 * (state.lambda - lambda22))
+                        + coeffs.delta3 * Math.cos(3 * (state.lambda - lambda33));
+            state.dnddt *= state.dlambdadt;
         }
-        else if (resonanceCoeffs.resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE)
+        else if (coeffs.resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE)
         {
+            // In [1], omega is mean element "updated with secular rates of other
+            // perturbations". However, in the reference implementation [2], the 
+            // omega only includes secular perturbations from harmonics in Earth 
+            // gravity. That is, third-body and drag secular rates are ignored.
+            const omega = deg2Rad(tle.argPerigee) 
+                        + secularGravity.domegadt * state.minsAfterEpoch;
 
+            // Dlmpq * Math.sin((l - 2p) * omega + m/2 * lambda - Glm)
+            state.dndt = coeffs.D2201 * Math.sin(2 * omega +     state.lambda - G22) 
+                       + coeffs.D2211 * Math.sin(                state.lambda - G22) 
+                       + coeffs.D3210 * Math.sin(    omega +     state.lambda - G32) 
+                       + coeffs.D3222 * Math.sin(  - omega +     state.lambda - G32) 
+                       + coeffs.D4410 * Math.sin(2 * omega + 2 * state.lambda - G44) 
+                       + coeffs.D4422 * Math.sin(            2 * state.lambda - G44) 
+                       + coeffs.D5220 * Math.sin(    omega +     state.lambda - G52) 
+                       + coeffs.D5232 * Math.sin(  - omega +     state.lambda - G52) 
+                       + coeffs.D5421 * Math.sin(    omega + 2 * state.lambda - G54) 
+                       + coeffs.D5433 * Math.sin(  - omega + 2 * state.lambda - G54);
+            state.dlambdadt = state.n + state.dlambdadt0;
+            state.dnddt = coeffs.D2201 * Math.cos(2 * omega +     state.lambda - G22) 
+                        + coeffs.D2211 * Math.cos(                state.lambda - G22) 
+                        + coeffs.D3210 * Math.cos(    omega +     state.lambda - G32) 
+                        + coeffs.D3222 * Math.cos(  - omega +     state.lambda - G32) 
+                        + coeffs.D5220 * Math.cos(    omega +     state.lambda - G52) 
+                        + coeffs.D5232 * Math.cos(  - omega +     state.lambda - G52) 
+                        + 2.0 * (
+                          coeffs.D4410 * Math.cos(2 * omega + 2 * state.lambda - G44) 
+                        + coeffs.D4422 * Math.cos(            2 * state.lambda - G44) 
+                        + coeffs.D5421 * Math.cos(    omega + 2 * state.lambda - G54) 
+                        + coeffs.D5433 * Math.cos(  - omega + 2 * state.lambda - G54)
+                        );
+            state.dnddt *= state.dlambdadt;
         }
+
+        // Compute the results with Euler-Maclaurin 
+        // We use here d^2lambda/dt^2 = dn/dt:
+        state.lambda += state.dlambdadt * timeStep + 0.5 * state.dndt  * timeStep2;
+        state.n      += state.dndt      * timeStep + 0.5 * state.dnddt * timeStep2;
+        state.minsAfterEpoch += timeStep;
     }
+
+    // Apply remainder to the values. The integration state is not updated.
+    const minsLeft = minsAfterEpoch - state.minsAfterEpoch;
+    const lambda = state.lambda 
+                 + state.dlambdadt * minsLeft 
+                 + 0.5 * state.dndt * minsLeft ** 2;
+    const n = state.n 
+            + state.dndt * minsLeft 
+            + 0.5 * state.dnddt * minsLeft ** 2;
+
+    // Extract results from the numerical integration.
+    let M;
+    if (coeffs.resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+    {
+        M = lambda - 2.0 * kepler.Omega + 2.0 * theta;
+    }
+    else if (coeffs.resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE)
+    {
+        M = lambda - kepler.Omega + theta;
+    }
+
+    return {M : M, n : n};
 }
 
 export function applyPeriodicsSdp4() 

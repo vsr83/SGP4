@@ -1,5 +1,5 @@
 import { deg2Rad, createExp } from "./MathUtils.js";
-
+import { gstime} from "./SGP4.js";
 /**
  * Enumeration for the resonance type.
  */
@@ -38,6 +38,8 @@ export function computeDeepCommon(tle, brouwer)
     const omegas = deg2Rad(281.2208026160437);
     // Solar perturbation coefficient (rad/min).
     const Cs = 2.98647972e-6;
+    // Lunar perturbation coefficient (rad/min).
+    const Cm = 4.796806521e-7;
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
     // Lunar mean motion (rad/min).
@@ -95,8 +97,8 @@ export function computeDeepCommon(tle, brouwer)
 
     // Compute third body secular rates from the Sun and the Moon.
     // Eccentricity rate for the Sun and the Moon (1 / min).
-    const deSdt = -15 * Cs * ns * e0 / n0 * (coeffSun.X1 * coeffSun.X3 + coeffSun.X2 * coeffSun.X4);
-    const deMdt = -15 * Cs * nm * e0 / n0 * (coeffMoon.X1 * coeffMoon.X3 + coeffMoon.X2 * coeffMoon.X4);
+    const deSdt = -15 * Cs * ns * e0 / n0 * eta0 * (coeffSun.X1 * coeffSun.X3 + coeffSun.X2 * coeffSun.X4);
+    const deMdt = -15 * Cm * nm * e0 / n0 * eta0 * (coeffMoon.X1 * coeffMoon.X3 + coeffMoon.X2 * coeffMoon.X4);
     // Inclination rate for the Sun and the Moon (rads / min).
     const dIsdt = - 0.5 * Cs * ns / eta0 / n0 * (coeffSun.Z11 + coeffSun.Z13);
     const dImdt = - 0.5 * Cm * nm / eta0 / n0 * (coeffMoon.Z11 + coeffMoon.Z13);
@@ -114,8 +116,16 @@ export function computeDeepCommon(tle, brouwer)
         dOmegamdt = Cm * nm / (2.0 * n0 * eta0 * Math.sin(I0)) * (coeffMoon.Z21 + coeffMoon.Z23);
     }
     // Argument of perigee rate (rads / min).
-    const domegasdt = Cs * ns * eta0 / n0 * (coeffSun.Z31 - coeffSun.Z33 - 6) - dOmegasdt;
-    const domegamdt = Cm * nm * eta0 / n0 * (coeffMoon.Z31 - coeffMoon.Z33 - 6) - dOmegamdt;
+    let domegasdt, domegamdt;
+    if (tle.inclination < 3.0) {
+        domegasdt = Cs * ns * eta0 / n0 * (coeffSun.Z31 + coeffSun.Z33 - 6);
+        domegamdt = Cm * nm * eta0 / n0 * (coeffMoon.Z31 + coeffMoon.Z33 - 6);
+    } else {
+        domegasdt = Cs * ns * eta0 / n0 * (coeffSun.Z31 + coeffSun.Z33 - 6) 
+                  - dOmegasdt * Math.cos(I0);
+        domegamdt = Cm * nm * eta0 / n0 * (coeffMoon.Z31 + coeffMoon.Z33 - 6) 
+                  - dOmegamdt * Math.cos(I0);
+    }
 
     // Sum the rate contributions from the Moon and the Sun:
     const secularRates = {
@@ -426,6 +436,8 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
  * 
  * @param {*} tle
  *      The TLE. 
+ * @param {BrouwerElements} brouwer 
+ *      Brouwer elements.
  * @param {*} secularSunMoon 
  *      The secular perturbations from the third-body effects of the Sun and 
  *      the Moon.
@@ -436,7 +448,7 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
  *      The resonance type.
  * @returns The initial condition for the auxiliary variable.
  */
-export function computeInitialCondition(tle, secularSunMoon, secularGravity, resonanceType) 
+export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGravity, resonanceType) 
 {
     const M0 = deg2Rad(tle.meanAnomaly);
     const Omega0 = deg2Rad(tle.raAscNode);
@@ -444,20 +456,25 @@ export function computeInitialCondition(tle, secularSunMoon, secularGravity, res
 
     // Time derivative of the Greenwich sidereal time. 
     // (360 / 86164.098903691) * 60 * pi / 180
-    dthetadt = 4.37526908801129966e-3;
+    const dthetadt = 4.37526908801129966e-3;
 
-    let lambda, dlambdadt, n;
+    let lambda0, dlambdadt0, n0;
     if (resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
     {
+        console.log("HALF_DAY_RESONANCE");
+
         lambda0 = (M0 + 2 * Omega0 - 2 * theta0) % (2.0 * Math.PI);
         dlambdadt0 = secularGravity.MDot + secularSunMoon.dMdt
-                    + 2.0 * (secularGravity.OmegaDot + secularSunMoon.dOmegadt - dthetadt);
-        // SDP4 reference implementation contains -rec->no_unkozai corresponding to
-        // -n additional term in the dlambdadt
+                    + 2.0 * (secularGravity.OmegaDot + secularSunMoon.dOmegadt - dthetadt)
+                    - brouwer.meanMotionBrouwer;
+        // SDP4 reference implementation contains -rec->no_unkozai (meanMotionBrouwer)
+        // while this term is missing from [1].
         n0 = brouwer.meanMotionBrouwer;
     } 
     else if (resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
     {
+        console.log("ONE_DAY_RESONANCE");
+
         // xlamo
         lambda0 = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
         // xfact
@@ -475,8 +492,7 @@ export function computeInitialCondition(tle, secularSunMoon, secularGravity, res
         dlambdadt0     : dlambdadt0,
         n              : n0,
         n0             : n0,
-        dndt           : dndt0,
-        dndt0          : ndot0
+        dndt           : 0,
     };
 }
 

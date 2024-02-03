@@ -81,6 +81,7 @@ export function computeBrouwer(tle)
         semiMajorAxisBrouwer : semiMajorAxisBrouwer
     };   
 }
+
 /**
  * Compute secular perturbations due to spherical harmonics in Earth's gravitational
  * potential. This is equivalent to computing the time derivatives of the 
@@ -265,7 +266,7 @@ export function secularDrag(tle, brouwer)
  *      Julian time (UT1).
  * @returns {number} GMST in radians.
  */
-function gstime(jtUt1)
+export function gstime(jtUt1)
 {
     // Julian centuries after the J2000.0 epoch.
     const T = (jtUt1 - 2451545.0) / 36525.0;

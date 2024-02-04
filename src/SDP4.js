@@ -452,6 +452,7 @@ export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGra
 {
     const M0 = deg2Rad(tle.meanAnomaly);
     const Omega0 = deg2Rad(tle.raAscNode);
+    const omega0 = deg2Rad(tle.argPerigee);
     const theta0 = gstime(tle.jtUt1Epoch)
 
     // Time derivative of the Greenwich sidereal time. 
@@ -472,9 +473,12 @@ export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGra
     else if (resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
     {
         lambda0 = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
-        dlambdadt0 = secularGravity.MDot + secularRatesSunMoon.dMdt
+        dlambdadt0 = secularGravity.MDot + secularSunMoon.dMdt
                    + secularGravity.OmegaDot + secularSunMoon.dOmegadt 
-                   + secularGravity.omegaDot + secularSunMoon.domegadt - dthetadt;
+                   + secularGravity.omegaDot + secularSunMoon.domegadt - dthetadt
+                   - brouwer.meanMotionBrouwer;
+        // SDP4 reference implementation contains -rec->no_unkozai (meanMotionBrouwer)
+        // while this term is missing from [1].
         n0 = brouwer.meanMotionBrouwer;
     } 
 
@@ -561,13 +565,15 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
     {
         if (coeffs.type == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
         {
-            state.dndt = coeffs.delta1 * Math.sin(state.lambda - lambda31)
-                       + coeffs.delta2 * Math.sin(2 * (state.lambda - lambda22))
-                       + coeffs.delta3 * Math.sin(3 * (state.lambda - lambda33));
+            const c = coeffs.coeffs;
+
+            state.dndt = c.delta1 * Math.sin(state.lambda - lambda31)
+                       + c.delta2 * Math.sin(2 * (state.lambda - lambda22))
+                       + c.delta3 * Math.sin(3 * (state.lambda - lambda33));
             state.dlambdadt = state.n + state.dlambdadt0;
-            state.dnddt = coeffs.delta1 * Math.cos(state - lambda31)
-                        + coeffs.delta2 * Math.cos(2 * (state.lambda - lambda22))
-                        + coeffs.delta3 * Math.cos(3 * (state.lambda - lambda33));
+            state.dnddt = c.delta1 * Math.cos(state.lambda - lambda31)
+                        + 2 * c.delta2 * Math.cos(2 * (state.lambda - lambda22))
+                        + 3 * c.delta3 * Math.cos(3 * (state.lambda - lambda33));
             state.dnddt *= state.dlambdadt;
         }
         else if (coeffs.type == RESONANCE_TYPE.HALF_DAY_RESONANCE)
@@ -633,11 +639,11 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
     let M;
     if (coeffs.type == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
     {
-        M = lambda - 2.0 * kepler.Omega + 2.0 * theta;
+        M = (lambda - 2.0 * kepler.Omega + 2.0 * theta) % (2 * Math.PI);
     }
     else if (coeffs.type == RESONANCE_TYPE.ONE_DAY_RESONANCE)
     {
-        M = lambda - kepler.Omega - kepler.omega + theta;
+        M = (lambda - kepler.Omega - kepler.omega + theta) % (2 * Math.PI);
     }
 
     return {M : M, n : n};

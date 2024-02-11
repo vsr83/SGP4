@@ -472,15 +472,25 @@ export function applyPeriodics(tle, kepler)
 
     const factor = A_30 * Math.sin(kepler.incl) / (4 * k2 * kepler.a * beta * beta);
     // Change in mean longitude due to long-period periodics.
-    const L = kepler.L + 0.5 * factor * kepler.ecc * Math.cos(kepler.omega)
-            * (3 + 5 * theta) / (1 + theta);
+    //const L = kepler.L + 0.5 * factor * kepler.ecc * Math.cos(kepler.omega)
+            //* (3 + 5 * theta) / (1 + theta);
     // Change in (e cos g) due to long-period periodics.
     const axN = kepler.ecc * Math.cos(kepler.omega);
+
+    const L = kepler.M + kepler.omega + kepler.Omega 
+            + 0.5 * factor * axN * (3 + 5 * theta) / (1 + theta);
+    //console.log(kepler.M + " " + kepler.omega + " " + kepler.Omega + " " + 0.5 * factor * axN * (3 + 5 * theta) / (1 + theta));
+    //console.log(factor);
+
     // Change in (e sin g) due to long-period periodics.
     const ayN = kepler.ecc * Math.sin(kepler.omega) + factor;
 
     // Start with longitude of perigee.
     const U = limitAngleTwoPi(L - kepler.Omega);
+    //console.log("axN " + axN);
+    //console.log("ayN " + ayN);
+    //console.log("U   " + U);
+    //console.log("L   " + L);
 
     // We solve Kepler's equation for E + omega with an iteration:
     // Iteration parameters taken from [Vallado]

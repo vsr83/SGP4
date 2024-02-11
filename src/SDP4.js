@@ -760,6 +760,7 @@ export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, 
         const L = (kepler.M + kepler.omega + Math.cos(incl) * Omega
                 + periodicsSum.deltaM + periodicsSum.deltaomegaI 
                 - periodicsSum.deltaI * Math.sin(incl) * Omega) % (2.0 * Math.PI);
+
         const Omegaold = Omega;
         Omega = Math.atan2(alfdb, betdb);
         if (Omega < 0.0) Omega += 2.0 * Math.PI;
@@ -772,7 +773,7 @@ export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, 
                 Omega -= 2.0 * Math.PI;
             }
         }
-        M += periodicsSum.deltaM;
+        M = kepler.M + periodicsSum.deltaM;
         omega = L - M - Math.cos(incl) * Omega;
     }
 

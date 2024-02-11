@@ -687,7 +687,7 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
  *      Minutes since epoch.
  * @returns Keplerian elements after application of periodics.
  */
-export function applyPeriodicsSdp4(tle, brouwer, kepler, tSince)
+export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, tSince)
 {
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
@@ -746,6 +746,7 @@ export function applyPeriodicsSdp4(tle, brouwer, kepler, tSince)
     } 
     else 
     {
+        // This computation is based directly on the reference implementation.
         const alfdb = Math.sin(incl) * Math.sin(kepler.Omega)
                     + periodicsSum.deltaOmegaI * Math.cos(kepler.Omega)
                     + periodicsSum.deltaI * Math.cos(incl) * Math.sin(kepler.Omega);
@@ -815,7 +816,7 @@ function computePeriodicsSdp4(ecc0, n0, coeffs, M, ecc, C)
                    +  F3 * (coeffs.X2 * coeffs.X4 - coeffs.X1 * coeffs.X3));
     const deltaI = - (C / (n0 * eta0))
                  * (F2 * coeffs.Z12 + F3 * (coeffs.Z13 - coeffs.Z11));
-    const deltaM = - (C /n)
+    const deltaM = - (2.0 * C /n0)
                  * (F2 * coeffs.Z2 + F3 * (coeffs.Z3 - coeffs.Z1) 
                  -  3.0 * ecc * Math.sin(f) * (7.0 + 3.0 * ecc0 * ecc0));
     const deltaomegaI = (2 * eta0 * C / n0)

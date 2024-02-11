@@ -9,7 +9,7 @@ import { deg2Rad, createExp } from "./MathUtils.js";
  * tumin : Inverse of xke (min/earth radii^1.5).
  * j2, j3, j4: Spherical harmonics 2-4 from WGS72.
  */
-const sgp4Constants = {
+export const sgp4Constants = {
     mu : 398600.8,
     radiusEarthKm : 6378.135,
     xke : 7.436691613317342e-02,
@@ -419,6 +419,7 @@ export function applySecularDrag(tle, brouwer, kepler, dragTerms, deltaTime)
             ecc = 1e-6;
         }
         const nm = brouwer.meanMotionBrouwer;
+
         a = Math.pow(sgp4Constants.xke / nm, 2/3) * Math.pow(
             1 - C1[1] * dt[1] - D2 * dt[2] - D3 * dt[3] - D4 * dt[4], 2);
                     

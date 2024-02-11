@@ -1,5 +1,6 @@
 import { deg2Rad, createExp } from "./MathUtils.js";
 import { gstime} from "./SGP4.js";
+
 /**
  * Enumeration for the resonance type.
  */
@@ -434,6 +435,14 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
  * Compute initial condition for the time integration of resonance effects of 
  * Earth gravity.
  * 
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
+ * 
  * @param {*} tle
  *      The TLE. 
  * @param {BrouwerElements} brouwer 
@@ -497,6 +506,14 @@ export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGra
 /**
  * Apply secular perturbations 
  * 
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
+ * 
  * @param {*} kepler 
  *      The Keplerian elements.
  * @param {*} thirdBodyRates 
@@ -519,6 +536,14 @@ export function applyThirdBodyPerturbations(kepler, thirdBodyRates, tSince)
 
 /**
  * Perform the time integration of resonance effects of Earth gravity.
+ * 
+ * [1] Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in 
+ * the U.S. Space Surveillance System, Journal of Guidance, Control and 
+ * Dynamics, Vol 27, No.2. 174-185 March-April 2004.
+ * [2] Vallado - Companion code for Fundamentals of Astrodynamics and 
+ * Applications, 2013.
+ * [3] Hujsak - A Restricted Four Body Solution for Resonating Satellites 
+ * without Drag, Project Space Track, 1979.
  * 
  * @param {Tle} tle 
  *      TLE for the satellite.
@@ -649,7 +674,156 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
     return {M : M, n : n};
 }
 
-export function applyPeriodicsSdp4() 
+/**
+ * Apply third-body periodics from the Sun and the Moon.
+ * 
+ * @param {*} tle 
+ *      The TLE.
+ * @param {*} brouwer 
+ *      The Brouwer elements.
+ * @param {*} kepler 
+ *      The Keplerian elements.
+ * @param {*} tSince 
+ *      Minutes since epoch.
+ * @returns Keplerian elements after application of periodics.
+ */
+export function applyPeriodicsSdp4(tle, brouwer, kepler, tSince)
 {
+    // Solar mean motion (rad/min).
+    const ns = 1.19459e-5;
+    // Lunar mean motion (rad/min).
+    const nm = 1.5835218e-4;
+    // Solar eccentricity.
+    const eccSun = 0.01675;
+    // Lunar eccentricity.
+    const eccMoon = 0.05490;
+    // Solar perturbation coefficient (rad/min).
+    const Cs = 2.98647972e-6;
+    // Lunar perturbation coefficient (rad/min).
+    const Cm = 4.796806521e-7;
 
+    // 1899-12-31 12:00:00 or "0.5" January 1900
+    const day1900 = tle.jtUt1Epoch - 2415020.0;
+    // The lunar longitude of perigee referred to the ecliptic.
+    const lambdaEcl =  5.8351514 + 0.0019443680 * day1900;
+
+    // Mean longitude of the Sun and the Moon at epoch.
+    const MepochSun  = 6.2565837 + 0.017201977 * day1900;
+    const MepochMoon = 4.7199672 + 0.22997150  * day1900 - lambdaEcl;
+
+    // Mean longitude of the Sun and the Moon.
+    const MSun  = (MepochSun  + ns * tSince) % (2.0 * Math.PI);
+    const MMoon = (MepochMoon + nm * tSince) % (2.0 * Math.PI);
+
+    const ecc0 = tle.eccentricity;
+    const n0 = brouwer.meanMotionBrouwer;
+
+    // Compute and sum the third-body periodics from the Moon and the Sun.
+    const periodicsSun  = computePeriodicsSdp4(ecc0, n0, coeffsSun, MSun, eccSun, Cs);
+    const periodicsMoon = computePeriodicsSdp4(ecc0, n0, coeffsMoon, MMoon, eccMoon, Cm);
+    const periodicsSum = {
+        deltaecc    : periodicsSun.deltaecc    + periodicsMoon.deltaecc, 
+        deltaI      : periodicsSun.deltaI      + periodicsMoon.deltaI, 
+        deltaM      : periodicsSun.deltaM      + periodicsMoon.deltaM, 
+        deltaomegaI : periodicsSun.deltaomegaI + periodicsMoon.deltaomegaI, 
+        deltaOmegaI : periodicsSun.deltaOmegaI + periodicsMoon.deltaOmegaI
+    };
+
+    const ecc = kepler.ecc + periodicsSum.deltaecc;
+    const incl = kepler.incl + periodicsSum.deltaI;
+
+    // Brouwer theory contains singularity at zero inclination so the applied
+    // periodics for omega, Omega and M are computed with so-called Lyddane 
+    // modification when inclination is small.
+    let omega, Omega, M;
+    if (incl >= 0.2) 
+    {
+        const deltaOmega = periodicsSum.deltaOmegaI / Math.sin(incl);
+        const deltaomega = periodicsSum.deltaomegaI  - Math.cos(incl) * deltaOmega;
+        omega = kepler.omega + deltaomega;
+        Omega = kepler.Omega + deltaOmega;
+        M = kepler.M + periodicsSum.deltaM;
+    } 
+    else 
+    {
+        const alfdb = Math.sin(incl) * Math.sin(kepler.Omega)
+                    + periodicsSum.deltaOmegaI * Math.cos(kepler.Omega)
+                    + periodicsSum.deltaI * Math.cos(incl) * Math.sin(kepler.Omega);
+        const betdb = Math.sin(incl) * Math.cos(kepler.Omega)
+                    - periodicsSum.deltaOmegaI * Math.sin(kepler.Omega)
+                    + periodicsSum.deltaI * Math.cos(incl) * Math.cos(kepler.Omega);
+        Omega = kepler.Omega % (2.0 * Math.PI);
+        if (Omega < 0.0) Omega += 2.0 * Math.PI;
+
+        // Mean longitude.
+        const L = (kepler.M + kepler.omega + Math.cos(incl) * Omega
+                + periodicsSum.deltaM + periodicsSum.deltaomegaI 
+                - periodicsSum.deltaI * Math.sin(incl) * Omega) % (2.0 * Math.PI);
+        const Omegaold = Omega;
+        Omega = Math.atan2(alfdb, betdb);
+        if (Omega < 0.0) Omega += 2.0 * Math.PI;
+
+        if (Math.abs(Omega - Omegaold) > Math.PI) 
+        {
+            if (Omega < Omegaold) {
+                Omega += 2.0 * Math.PI;
+            } else {
+                Omega -= 2.0 * Math.PI;
+            }
+        }
+        M += periodicsSum.deltaM;
+        omega = L - M - Math.cos(incl) * Omega;
+    }
+
+    return {
+        a : kepler.a,
+        n : kepler.n, 
+        ecc : ecc, 
+        incl : incl,
+        Omega : Omega,
+        omega : omega,
+        M : M
+    };
+}
+
+/**
+ * Compute periodics for a third body (Sun or the Moon).
+ * 
+ * @param {*} ecc0 
+ *      Eccentricity of the satellite at Epoch.
+ * @param {*} n0 
+ *      Brouwer mean motion at epoch (radians / minute).
+ * @param {*} coeffs 
+ *      Secular perturbation coefficients for the third body.
+ * @param {*} M 
+ *      Mean anomaly of the third body (radians).
+ * @param {*} ecc 
+ *      Eccentricity of the third body.
+ * @param {*} C 
+ *      Perturbation coefficient of the third body (radians per minute).
+ * @returns The periodics.
+ */
+function computePeriodicsSdp4(ecc0, n0, coeffs, M, ecc, C)
+{
+    const f = M + 2.0 * ecc * Math.sin(M);
+    const F2 = 0.5 * Math.sin(f) * Math.sin(f) - 0.25;
+    const F3 = -0.5 * Math.sin(f) * Math.cos(f);
+    const eta0 = Math.sqrt(1 - ecc0 * ecc0);
+
+    const deltaecc = -(30 * eta0 * C * ecc0 / n0) 
+                   * (F2 * (coeffs.X2 * coeffs.X3 + coeffs.X1 * coeffs.X4)
+                   +  F3 * (coeffs.X2 * coeffs.X4 - coeffs.X1 * coeffs.X3));
+    const deltaI = - (C / (n0 * eta0))
+                 * (F2 * coeffs.Z12 + F3 * (coeffs.Z13 - coeffs.Z11));
+    const deltaM = - (C /n)
+                 * (F2 * coeffs.Z2 + F3 * (coeffs.Z3 - coeffs.Z1) 
+                 -  3.0 * ecc * Math.sin(f) * (7.0 + 3.0 * ecc0 * ecc0));
+    const deltaomegaI = (2 * eta0 * C / n0)
+                      * (F2 * coeffs.Z32 + F3 * (coeffs.Z33 - coeffs.Z31)
+                      - 9.0 * ecc * Math.sin(f));
+    const deltaOmegaI = (C / (n0 * eta0))
+                      * (F2 * coeffs.Z22 + F3 * (coeffs.Z23 - coeffs.Z21));
+
+    return {deltaecc : deltaecc, deltaI : deltaI, deltaM : deltaM, 
+            deltaomegaI : deltaomegaI, deltaOmegaI : deltaOmegaI};
 }

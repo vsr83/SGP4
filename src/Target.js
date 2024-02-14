@@ -1,4 +1,3 @@
-import { deg2Rad, createExp } from "./MathUtils.js";
 import { computeBrouwer, secularRatesBrouwer, applySecularBrouwer, applyPeriodicsBrouwer } from "../src/Brouwer.js";
 import { secularDrag, applySecularDrag } from "../src/Drag.js";
 import { osculatingToTeme } from "../src/Frames.js";

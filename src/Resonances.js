@@ -1,5 +1,6 @@
 import { deg2Rad } from "./MathUtils.js";
 import { gstime } from "./Common.js";
+
 /**
  * Enumeration for the resonance type.
  */

@@ -79,7 +79,7 @@ export function computeBrouwer(tle)
  * - omegaDot: Time derivative of the argument of perigee (radians/minute).
  * - OmegaDot: Time derivative of the longitude of ascending node (radians/minute).
  */
-export function secularGravity(tle, brouwer) 
+export function secularRatesBrouwer(tle, brouwer) 
 {
     const inclinationRadsEpoch = deg2Rad(tle.inclination);
 
@@ -127,7 +127,7 @@ export function secularGravity(tle, brouwer)
  * - omega: The mean argument of perigee (rad)
  * - Omega: The mean longitude of ascending node (rad)
  */
-export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime) 
+export function applySecularBrouwer(tle, brouwer, brouwerDer, deltaTime) 
 {
     // Mean anomaly at epoch (rad).
     const Mepoch = deg2Rad(tle.meanAnomaly);
@@ -170,7 +170,7 @@ export function applySecularGravity(tle, brouwer, brouwerDer, deltaTime)
  * - rfdot : Product of r and the time derivative natural anomaly 
  *           (earth radii * radians / minute).
  */
-export function applyPeriodics(tle, kepler, ip) 
+export function applyPeriodicsBrouwer(tle, kepler, ip) 
 {
     const A_30 = -wgs72Constants.j3;
     const k2 = 0.5 * wgs72Constants.j2;
@@ -195,18 +195,12 @@ export function applyPeriodics(tle, kepler, ip)
 
     const L = kepler.M + kepler.omega + kepler.Omega 
             + 0.5 * factor * axN * (3 + 5 * theta) / (1 + theta);
-    //console.log(kepler.M + " " + kepler.omega + " " + kepler.Omega + " " + 0.5 * factor * axN * (3 + 5 * theta) / (1 + theta));
-    //console.log(factor);
 
     // Change in (e sin g) due to long-period periodics.
     const ayN = kepler.ecc * Math.sin(kepler.omega) + factor;
 
     // Start with longitude of perigee.
     const U = limitAngleTwoPi(L - kepler.Omega);
-    //console.log("axN " + axN);
-    //console.log("ayN " + ayN);
-    //console.log("U   " + U);
-    //console.log("L   " + L);
 
     // We solve Kepler's equation for E + omega with an iteration:
     // Iteration parameters taken from [Vallado]

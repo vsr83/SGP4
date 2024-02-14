@@ -1,10 +1,10 @@
 import { tleFromLines } from "../src/TLE.js";
-import { computeBrouwer, secularGravity, applySecularGravity, applyPeriodics } from "../src/Brouwer.js";
+import { computeBrouwer, secularRatesBrouwer, applySecularBrouwer, applyPeriodicsBrouwer } from "../src/Brouwer.js";
 import { secularDrag, applySecularDrag } from "../src/Drag.js";
 import { osculatingToTeme } from "../src/Frames.js";
 import { wgs72Constants } from "../src/Common.js";
 import { sgp4Applicable } from "../src/SGP4.js";
-import { computeDeepCommon, applyThirdBodyPerturbations, applyPeriodicsSdp4 } from "../src/SunMoon.js";
+import { computeThirdBodyParams, applyThirdBodyPerturbations, applyPeriodicsSunMoon } from "../src/SunMoon.js";
 import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, RESONANCE_TYPE} from "../src/Resonances.js";
 import {readFileSync} from 'fs';
 
@@ -67,23 +67,23 @@ describe('SGP4 propagation', function() {
                 let osc;
                 const brouwer = computeBrouwer(tle);
                 if (sgp4Applicable(brouwer)) {
-                    const secGrav = secularGravity(tle, brouwer);
+                    const secGrav = secularRatesBrouwer(tle, brouwer);
                     const dragTerm = secularDrag(tle, brouwer);
-                    const kepler1 = applySecularGravity(tle, brouwer, secGrav, 1000.0);
+                    const kepler1 = applySecularBrouwer(tle, brouwer, secGrav, 1000.0);
                     const kepler2 = applySecularDrag(tle, brouwer, kepler1, dragTerm, 1000.0);
-                    const periodics = applyPeriodics(tle, kepler2);
+                    const periodics = applyPeriodicsBrouwer(tle, kepler2);
                     osc = osculatingToTeme(periodics);
                     //continue;
                 } else {
                     //console.log("SDP4");
-                    const common = computeDeepCommon(tle, brouwer);
+                    const common = computeThirdBodyParams(tle, brouwer);
                     const resonance = computeResonanceCoeffs(tle, brouwer);
         
-                    const secGrav = secularGravity(tle, brouwer);
+                    const secGrav = secularRatesBrouwer(tle, brouwer);
                     const dragTerm = secularDrag(tle, brouwer);
                     dragTerm.useSimplifiedDrag = true;
 
-                    const kepler1 = applySecularGravity(tle, brouwer, secGrav, 1000.0);
+                    const kepler1 = applySecularBrouwer(tle, brouwer, secGrav, 1000.0);
                     //const kepler2 = applySecularDrag(tle, brouwer, kepler1, dragTerm, 1000.0, true);
                     const kepler3 = applyThirdBodyPerturbations(kepler1, common.secularRates, 1000.0);
         
@@ -117,7 +117,7 @@ describe('SGP4 propagation', function() {
                     };
                     //const kepler2 = applySecularDrag(tle, brouwer, kepler4, dragTerm, 1000.0, true);
 
-                    const kepler5 = applyPeriodicsSdp4(tle, brouwer, common.sun, common.moon, 
+                    const kepler5 = applyPeriodicsSunMoon(tle, brouwer, common.sun, common.moon, 
                         kepler4, 1000.0);
         
                     if (kepler5.incl < 0.0)
@@ -132,7 +132,7 @@ describe('SGP4 propagation', function() {
                     //console.log(output);
                     //console.log(kepler4);
         
-                    const periodics = applyPeriodics(tle, kepler5, kepler5.incl);
+                    const periodics = applyPeriodicsBrouwer(tle, kepler5, kepler5.incl);
                     osc = osculatingToTeme(periodics);
         
                 }
@@ -238,7 +238,7 @@ describe('SGP4 propagation', function() {
 
 
         describe('CLUSTER II-FM6 (SALSA)', function() {
-       //     return;
+            return;
         const tle = tleFromLines(
         ["CLUSTER II-FM6 (SALSA)  ",
             "1 26411U 00041B   24008.76597484  .00003311  00000+0  00000+0 0  9999",

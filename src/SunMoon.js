@@ -20,7 +20,7 @@ import { deg2Rad } from "./MathUtils.js";
  * @return {Object} JSON with coefficients for the Moon and the Sun and the 
  * summed secular perturbation rates from both bodies.
  */
-export function computeDeepCommon(tle, brouwer) 
+export function computeThirdBodyParams(tle, brouwer) 
 {
     // Longitude of ascending node for the Sun.
     const Omegas = 0;
@@ -258,7 +258,7 @@ export function applyThirdBodyPerturbations(kepler, thirdBodyRates, tSince)
  *      Minutes since epoch.
  * @returns Keplerian elements after application of periodics.
  */
-export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, tSince)
+export function applyPeriodicsSunMoon(tle, brouwer, coeffsSun, coeffsMoon, kepler, tSince)
 {
     // Solar mean motion (rad/min).
     const ns = 1.19459e-5;
@@ -290,8 +290,8 @@ export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, 
     const n0 = brouwer.meanMotionBrouwer;
 
     // Compute and sum the third-body periodics from the Moon and the Sun.
-    const periodicsSun  = computePeriodicsSdp4(ecc0, n0, coeffsSun, MSun, eccSun, Cs);
-    const periodicsMoon = computePeriodicsSdp4(ecc0, n0, coeffsMoon, MMoon, eccMoon, Cm);
+    const periodicsSun  = computePeriodicsThird(ecc0, n0, coeffsSun, MSun, eccSun, Cs);
+    const periodicsMoon = computePeriodicsThird(ecc0, n0, coeffsMoon, MMoon, eccMoon, Cm);
     const periodicsSum = {
         deltaecc    : periodicsSun.deltaecc    + periodicsMoon.deltaecc, 
         deltaI      : periodicsSun.deltaI      + periodicsMoon.deltaI, 
@@ -376,7 +376,7 @@ export function applyPeriodicsSdp4(tle, brouwer, coeffsSun, coeffsMoon, kepler, 
  *      Perturbation coefficient of the third body (radians per minute).
  * @returns The periodics.
  */
-function computePeriodicsSdp4(ecc0, n0, coeffs, M, ecc, C)
+function computePeriodicsThird(ecc0, n0, coeffs, M, ecc, C)
 {
     const f = M + 2.0 * ecc * Math.sin(M);
     const F2 = 0.5 * Math.sin(f) * Math.sin(f) - 0.25;

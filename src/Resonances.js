@@ -322,7 +322,7 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
     let timeStep = 720.0;
     let timeStep2 = timeStep * timeStep;
 
-    if (minsAfterEpoch < 0.0) 
+    if (minsAfterEpoch - state.minsAfterEpoch < 0.0) 
     {
         timeStep = - timeStep;
     }

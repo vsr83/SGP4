@@ -61,53 +61,72 @@ export function createTarget(tle) {
     return target;
 }
 
+/**
+ * Propagate target with SGP4/SDP4.
+ * 
+ * @param {Target} target 
+ *      The target.
+ * @param {number} tSince 
+ *      Minutes since epoch.
+ * @returns {Osv} Orbit state vector in TEME frame.
+ */
 export function propagateTarget(target, tSince) {
     if (target.solverType == SolverType.SGP4) {
+        // Apply secular perturbations due to harmonics in Earth's gravitational potential.
         const kepler1 = applySecularBrouwer(target.tle, target.brouwer, target.secGrav, tSince);
+        // Apply secular perturbations due to drag.
         const kepler2 = applySecularDrag(target.tle, target.brouwer, kepler1, target.dragTerms, tSince);
+        // Apply periodics due to harmonics in Earth's gravitational potential.
         const periodics = applyPeriodicsBrouwer(target.tle, kepler2);
+        // Compute position and velocity vectors in the TEME frame.
         return osculatingToTeme(periodics);
     } else {
+        // Apply secular perturbations due to harmonics in Earth's gravitational potential.
         const kepler1 = applySecularBrouwer(target.tle, target.brouwer, target.secGrav, tSince);
-        const kepler3 = applyThirdBodyPerturbations(kepler1, target.thirdBodyCommon.secularRates, tSince);
+        // Apply secular perturbations due to the Sun and the Moon.
+        const kepler2 = applyThirdBodyPerturbations(kepler1, target.thirdBodyCommon.secularRates, tSince);
 
+        // Perform the time integration of resonance effects of Earth gravity. 
         let output;
         if (target.resonance.type == ResonanceType.NO_RESONANCE) {
-            output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
+            output = {M : kepler2.M, n : wgs72Constants.xke / Math.pow(kepler2.a, 1.5)};
         } else {
-            const state = computeInitialCondition(target.tle, target.brouwer, 
-                target.thirdBodyCommon.secularRates, target.secGrav, target.resonance.type);
-            output = integrateResonances(target.tle, target.resonance, target.secGrav, kepler3, tSince, 
+            output = integrateResonances(target.tle, target.resonance, target.secGrav, kepler2, tSince, 
                 target.integrationState);                    
         }
 
+        // Apply secular perturbations due to drag.
+        // TODO: Move these to Drag.js.
         const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - target.dragTerms.C1[1] * tSince, 2);
         const n = wgs72Constants.xke / Math.pow(a, 1.5);
-        const ecc = kepler3.ecc - target.tle.dragTerm * target.dragTerms.C4 * tSince;
+        const ecc = kepler2.ecc - target.tle.dragTerm * target.dragTerms.C4 * tSince;
         let M = (output.M + target.brouwer.meanMotionBrouwer * target.dragTerms.t2cof * tSince * tSince) % (2.0 * Math.PI);
 
-        const kepler4 = {
+        const kepler3 = {
             a : a,
-            incl : kepler3.incl,
+            incl : kepler2.incl,
             ecc : ecc,
             M : M,
-            omega : kepler3.omega,
-            Omega : kepler3.Omega,
+            omega : kepler2.omega,
+            Omega : kepler2.Omega,
             n : n
         };
 
-        const kepler5 = applyPeriodicsSunMoon(target.tle, target.brouwer, target.thirdBodyCommon.sun, 
+        // Apply third-body periodics from the Sun and the Moon.
+        const kepler4 = applyPeriodicsSunMoon(target.tle, target.brouwer, target.thirdBodyCommon.sun, 
             target.thirdBodyCommon.moon, 
-            kepler4, 1000.0);
+            kepler3, tSince);
 
-        if (kepler5.incl < 0.0)
+        if (kepler4.incl < 0.0)
         {
-            kepler5.incl *= -1;
-            kepler5.Omega += Math.PI;
-            kepler5.omega -= Math.PI;
+            kepler4.incl *= -1;
+            kepler4.Omega += Math.PI;
+            kepler4.omega -= Math.PI;
         }
 
-        const periodics = applyPeriodicsBrouwer(target.tle, kepler5, kepler5.incl);
+        // Apply periodics due to harmonics in Earth's gravitational potential.
+        const periodics = applyPeriodicsBrouwer(target.tle, kepler4, kepler4.incl);
+        // Compute position and velocity vectors in the TEME frame.
         return osculatingToTeme(periodics);
     }
 }

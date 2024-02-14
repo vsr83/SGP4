@@ -4,7 +4,7 @@ import { gstime } from "./Common.js";
 /**
  * Enumeration for the resonance type.
  */
-export const RESONANCE_TYPE = {
+export const ResonanceType = {
     NO_RESONANCE : 1,
     ONE_DAY_RESONANCE : 2,
     HALF_DAY_RESONANCE : 3
@@ -31,13 +31,13 @@ export const RESONANCE_TYPE = {
 export function computeResonanceCoeffs(tle, brouwer) 
 {
     // Initialize resonance type.
-    let resonanceType = RESONANCE_TYPE.NO_RESONANCE;
+    let resonanceType = ResonanceType.NO_RESONANCE;
     let coeffs;
 
     // Period is between 1200 and 1800 minutes. 
     if (brouwer.meanMotionBrouwer > 0.0034906585 && 
         brouwer.meanMotionBrouwer < 0.0052359877) {
-            resonanceType = RESONANCE_TYPE.ONE_DAY_RESONANCE;
+            resonanceType = ResonanceType.ONE_DAY_RESONANCE;
             coeffs = computeOneDayResonanceCoeffs(tle, brouwer);
     }
     // Period is between 680 and 760 minutes. 2 * pi / 760 = 0.008267349
@@ -46,7 +46,7 @@ export function computeResonanceCoeffs(tle, brouwer)
     if (brouwer.meanMotionBrouwer >= 8.26e-3 && 
         brouwer.meanMotionBrouwer <= 9.24e-3 &&
         tle.eccentricity >= 0.5) {
-            resonanceType = RESONANCE_TYPE.HALF_DAY_RESONANCE;
+            resonanceType = ResonanceType.HALF_DAY_RESONANCE;
             coeffs = computeHalfDayResonanceCoeffs(tle, brouwer);
     }    
 
@@ -239,7 +239,7 @@ function computeHalfDayResonanceCoeffs(tle, brouwer)
  * @param {Object} secularGravity 
  *      The secular perturbations from the spherical harmonics in Earth's 
  *      gravitational potential.
- * @param {RESONANCE_TYPE} resonanceType 
+ * @param {ResonanceType} resonanceType 
  *      The resonance type.
  * @returns The initial condition for the auxiliary variable.
  */
@@ -255,7 +255,7 @@ export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGra
     const dthetadt = 4.37526908801129966e-3;
 
     let lambda0, dlambdadt0, n0;
-    if (resonanceType == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
+    if (resonanceType == ResonanceType.HALF_DAY_RESONANCE) 
     {
         lambda0 = (M0 + 2 * Omega0 - 2 * theta0) % (2.0 * Math.PI);
         dlambdadt0 = secularGravity.MDot + secularSunMoon.dMdt
@@ -265,7 +265,7 @@ export function computeInitialCondition(tle, brouwer, secularSunMoon, secularGra
         // while this term is missing from [1].
         n0 = brouwer.meanMotionBrouwer;
     } 
-    else if (resonanceType == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+    else if (resonanceType == ResonanceType.ONE_DAY_RESONANCE) 
     {
         lambda0 = (M0 + Omega0 + omega0 - theta0) % (2.0 * Math.PI);
         dlambdadt0 = secularGravity.MDot + secularSunMoon.dMdt
@@ -343,7 +343,7 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
 
     for (;;) 
     {
-        if (coeffs.type == RESONANCE_TYPE.ONE_DAY_RESONANCE) 
+        if (coeffs.type == ResonanceType.ONE_DAY_RESONANCE) 
         {
             const c = coeffs.coeffs;
 
@@ -356,7 +356,7 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
                         + 3 * c.delta3 * Math.cos(3 * (state.lambda - lambda33));
             state.dnddt *= state.dlambdadt;
         }
-        else if (coeffs.type == RESONANCE_TYPE.HALF_DAY_RESONANCE)
+        else if (coeffs.type == ResonanceType.HALF_DAY_RESONANCE)
         {
             // In [1], omega is mean element "updated with secular rates of other
             // perturbations". However, in the reference implementation [2], the 
@@ -417,11 +417,11 @@ export function integrateResonances(tle, coeffs, secularGravity, kepler, minsAft
 
     // Extract results from the numerical integration.
     let M;
-    if (coeffs.type == RESONANCE_TYPE.HALF_DAY_RESONANCE) 
+    if (coeffs.type == ResonanceType.HALF_DAY_RESONANCE) 
     {
         M = (lambda - 2.0 * kepler.Omega + 2.0 * theta) % (2 * Math.PI);
     }
-    else if (coeffs.type == RESONANCE_TYPE.ONE_DAY_RESONANCE)
+    else if (coeffs.type == ResonanceType.ONE_DAY_RESONANCE)
     {
         M = (lambda - kepler.Omega - kepler.omega + theta) % (2 * Math.PI);
     }

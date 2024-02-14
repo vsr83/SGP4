@@ -3,9 +3,9 @@ import { computeBrouwer, secularRatesBrouwer, applySecularBrouwer, applyPeriodic
 import { secularDrag, applySecularDrag } from "../src/Drag.js";
 import { osculatingToTeme } from "../src/Frames.js";
 import { wgs72Constants } from "../src/Common.js";
-import { sgp4Applicable } from "../src/SGP4.js";
+import { createTarget, propagateTarget, sgp4Applicable } from "../src/Target.js";
 import { computeThirdBodyParams, applyThirdBodyPerturbations, applyPeriodicsSunMoon } from "../src/SunMoon.js";
-import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, RESONANCE_TYPE} from "../src/Resonances.js";
+import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, ResonanceType} from "../src/Resonances.js";
 import {readFileSync} from 'fs';
 
 describe('SGP4 propagation', function() {
@@ -64,79 +64,8 @@ describe('SGP4 propagation', function() {
                 //if (tle.title.startsWith("SPIRALE")) continue;
                 //if (tle.title.startsWith("TACSAT")) continue;
 
-                let osc;
-                const brouwer = computeBrouwer(tle);
-                if (sgp4Applicable(brouwer)) {
-                    const secGrav = secularRatesBrouwer(tle, brouwer);
-                    const dragTerm = secularDrag(tle, brouwer);
-                    const kepler1 = applySecularBrouwer(tle, brouwer, secGrav, 1000.0);
-                    const kepler2 = applySecularDrag(tle, brouwer, kepler1, dragTerm, 1000.0);
-                    const periodics = applyPeriodicsBrouwer(tle, kepler2);
-                    osc = osculatingToTeme(periodics);
-                    //continue;
-                } else {
-                    //console.log("SDP4");
-                    const common = computeThirdBodyParams(tle, brouwer);
-                    const resonance = computeResonanceCoeffs(tle, brouwer);
-        
-                    const secGrav = secularRatesBrouwer(tle, brouwer);
-                    const dragTerm = secularDrag(tle, brouwer);
-                    dragTerm.useSimplifiedDrag = true;
-
-                    const kepler1 = applySecularBrouwer(tle, brouwer, secGrav, 1000.0);
-                    //const kepler2 = applySecularDrag(tle, brouwer, kepler1, dragTerm, 1000.0, true);
-                    const kepler3 = applyThirdBodyPerturbations(kepler1, common.secularRates, 1000.0);
-        
-                    let output;
-                    if (resonance.type == RESONANCE_TYPE.NO_RESONANCE) {
-                        output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
-                    } else {
-                        const state = computeInitialCondition(tle, brouwer, common.secularRates, secGrav, resonance.type);
-                        output = integrateResonances(tle, resonance, secGrav, kepler3, 1000.0, state);                    
-                    }
-
-                    console.log(resonance.type + " " + kepler3.ecc);
-
-                    const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 1000, 2);
-                    const n = wgs72Constants.xke / Math.pow(a, 1.5);
-                    const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * 1000.0;
-                    let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 1000.0 * 1000.0) % (2.0 * Math.PI);                    
-        
-                    // Mean longitude.
-                    //const L = (M + kepler3.omega + kepler3.Omega) % (2.0 * Math.PI);
-                    //M = (L - kepler3.omega - kepler3.Omega) % (2.0 * Math.PI);
-        
-                    const kepler4 = {
-                        a : a,
-                        incl : kepler3.incl,
-                        ecc : ecc,
-                        M : M,
-                        omega : kepler3.omega,
-                        Omega : kepler3.Omega,
-                        n : n
-                    };
-                    //const kepler2 = applySecularDrag(tle, brouwer, kepler4, dragTerm, 1000.0, true);
-
-                    const kepler5 = applyPeriodicsSunMoon(tle, brouwer, common.sun, common.moon, 
-                        kepler4, 1000.0);
-        
-                    if (kepler5.incl < 0.0)
-                    {
-                        kepler5.incl *= -1;
-                        kepler5.Omega += Math.PI;
-                        kepler5.omega -= Math.PI;
-                    }
-
-                    //console.log(kepler3);
-                    //console.log(state);
-                    //console.log(output);
-                    //console.log(kepler4);
-        
-                    const periodics = applyPeriodicsBrouwer(tle, kepler5, kepler5.incl);
-                    osc = osculatingToTeme(periodics);
-        
-                }
-
+                const target = createTarget(tle);
+                const osc = propagateTarget(target, 1000.0);
                 const expLine = dataset[indElem];
                 const expElems = expLine.split(" ");
                 const rExp = [expElems[1], expElems[2], expElems[3]];
@@ -257,7 +186,7 @@ describe('SGP4 propagation', function() {
             const kepler3 = applyThirdBodyPerturbations(kepler1, common.secularRates, 10000.0);
 
             let output;
-            if (resonance.type == RESONANCE_TYPE.NO_RESONANCE) {
+            if (resonance.type == ResonanceType.NO_RESONANCE) {
                 output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
             } else {
                 const state = computeInitialCondition(tle, brouwer, common.secularRates, secGrav, resonance.type);

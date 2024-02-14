@@ -1,6 +1,11 @@
 import { tleFromLines } from "../src/TLE.js";
-import { computeBrouwer, secularGravity, secularDrag, applySecularGravity, applySecularDrag, applyPeriodics, osculatingToTeme, sgp4Constants, sgp4Applicable } from "../src/SGP4.js";
-import {computeDeepCommon, computeResonanceCoeffs, computeInitialCondition, applyThirdBodyPerturbations, integrateResonances, applyPeriodicsSdp4, RESONANCE_TYPE} from "../src/SDP4.js";
+import { computeBrouwer, secularGravity, applySecularGravity, applyPeriodics } from "../src/Brouwer.js";
+import { secularDrag, applySecularDrag } from "../src/Drag.js";
+import { osculatingToTeme } from "../src/Frames.js";
+import { wgs72Constants } from "../src/Common.js";
+import { sgp4Applicable } from "../src/SGP4.js";
+import { computeDeepCommon, applyThirdBodyPerturbations, applyPeriodicsSdp4 } from "../src/SunMoon.js";
+import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, RESONANCE_TYPE} from "../src/Resonances.js";
 import {readFileSync} from 'fs';
 
 describe('SGP4 propagation', function() {
@@ -84,7 +89,7 @@ describe('SGP4 propagation', function() {
         
                     let output;
                     if (resonance.type == RESONANCE_TYPE.NO_RESONANCE) {
-                        output = {M : kepler3.M, n : sgp4Constants.xke / Math.pow(kepler3.a, 1.5)};
+                        output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
                     } else {
                         const state = computeInitialCondition(tle, brouwer, common.secularRates, secGrav, resonance.type);
                         output = integrateResonances(tle, resonance, secGrav, kepler3, 1000.0, state);                    
@@ -92,8 +97,8 @@ describe('SGP4 propagation', function() {
 
                     console.log(resonance.type + " " + kepler3.ecc);
 
-                    const a = Math.pow(sgp4Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 1000, 2);
-                    const n = sgp4Constants.xke / Math.pow(a, 1.5);
+                    const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 1000, 2);
+                    const n = wgs72Constants.xke / Math.pow(a, 1.5);
                     const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * 1000.0;
                     let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 1000.0 * 1000.0) % (2.0 * Math.PI);                    
         
@@ -190,8 +195,8 @@ describe('SGP4 propagation', function() {
             const kepler3 = applyThirdBodyPerturbations(kepler2, common.secularRates, 10000.0);
 
             const output = integrateResonances(tle, resonance, secGrav, kepler3, 10000.0, state);
-            const a = Math.pow(sgp4Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
-            const n = sgp4Constants.xke / Math.pow(a, 1.5);
+            const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
+            const n = wgs72Constants.xke / Math.pow(a, 1.5);
             const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * 10000.0;
             let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 10000.0 * 10000.0) % (2.0 * Math.PI);
 
@@ -253,7 +258,7 @@ describe('SGP4 propagation', function() {
 
             let output;
             if (resonance.type == RESONANCE_TYPE.NO_RESONANCE) {
-                output = {M : kepler3.M, n : sgp4Constants.xke / Math.pow(kepler3.a, 1.5)};
+                output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
             } else {
                 const state = computeInitialCondition(tle, brouwer, common.secularRates, secGrav, resonance.type);
                 output = integrateResonances(tle, resonance, secGrav, kepler3, 10000.0, state);                    
@@ -261,8 +266,8 @@ describe('SGP4 propagation', function() {
 
             console.log(resonance.type + " " + kepler3.ecc);
 
-            const a = Math.pow(sgp4Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
-            const n = sgp4Constants.xke / Math.pow(a, 1.5);
+            const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
+            const n = wgs72Constants.xke / Math.pow(a, 1.5);
             const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * 10000.0;
             let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 10000.0 * 10000.0) % (2.0 * Math.PI);                    
 
@@ -314,10 +319,10 @@ describe('SGP4 propagation', function() {
             const state = computeInitialCondition(tle, brouwer, common.secularRates, secGrav, resonance.type);
             const kepler3 = applyThirdBodyPerturbations(kepler2, common.secularRates, 10000.0);
 
-            const output = {M : kepler3.M, n : sgp4Constants.xke / Math.pow(kepler3.a, 1.5)};
+            const output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
             //const output = integrateResonances(tle, resonance, secGrav, kepler3, 10000.0, state);
-            const a = Math.pow(sgp4Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
-            const n = sgp4Constants.xke / Math.pow(a, 1.5);
+            const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * 10000, 2);
+            const n = wgs72Constants.xke / Math.pow(a, 1.5);
             const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * 10000.0;
             let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 10000.0 * 10000.0) % (2.0 * Math.PI);
 
@@ -379,10 +384,10 @@ describe('SGP4 propagation', function() {
             const kepler2 = applyThirdBodyPerturbations(kepler1, common.secularRates, timeSince);
             const kepler3 = applySecularDrag(tle, brouwer, kepler2, dragTerm, timeSince);
 
-            //const output = {M : kepler3.M, n : sgp4Constants.xke / Math.pow(kepler3.a, 1.5)};
+            //const output = {M : kepler3.M, n : wgs72Constants.xke / Math.pow(kepler3.a, 1.5)};
             //const output = integrateResonances(tle, resonance, secGrav, kepler3, 10000.0, state);
-            //const a = Math.pow(sgp4Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * timeSince, 2);
-            //const n = sgp4Constants.xke / Math.pow(a, 1.5);
+            //const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - dragTerm.C1[1] * timeSince, 2);
+            //const n = wgs72Constants.xke / Math.pow(a, 1.5);
             //const ecc = kepler3.ecc - tle.dragTerm * dragTerm.C4 * timeSince;
 
             //let M = (output.M + brouwer.meanMotionBrouwer * dragTerm.t2cof * 10000.0 * 10000.0) % (2.0 * Math.PI);

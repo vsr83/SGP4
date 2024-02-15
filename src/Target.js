@@ -69,15 +69,40 @@ export function createTarget(tle) {
  *      The target.
  * @param {number} tSince 
  *      Minutes since epoch.
+ * @param {number | undefined} minStep
+ *      Minimum step for use of full solution instead of linear extrapolation (seconds).
  * @returns {Osv} Orbit state vector in TEME frame.
  */
-export function propagateTarget(target, tSince) {
+export function propagateTarget(target, tSince, minStep) {
     if (!(typeof tSince === "number")) {
         throw {
             type : SgpErrorType.ERROR_INVALID_TSINCE,
             message : "tSince parameter " + tSince + " not a number!"
         };
     }
+
+    if (minStep === undefined) {
+        minStep = 0;
+    }
+
+    const deltaTimeSec = 60 * (tSince - target.lastTime);
+
+    if (target.lastTime === undefined)
+    {
+        // TBD
+    }
+    else if (Math.abs(deltaTimeSec) < minStep) {
+        return {
+            r : [
+                target.lastOsv.r[0] + target.lastOsv.v[0] * deltaTimeSec,
+                target.lastOsv.r[1] + target.lastOsv.v[1] * deltaTimeSec,
+                target.lastOsv.r[2] + target.lastOsv.v[2] * deltaTimeSec,
+            ],
+            v : target.lastOsv.v
+        };
+    }
+
+    let osv;
 
     if (target.solverType == SolverType.SGP4) {
         // Apply secular perturbations due to harmonics in Earth's gravitational potential.
@@ -95,7 +120,7 @@ export function propagateTarget(target, tSince) {
         // Apply periodics due to harmonics in Earth's gravitational potential.
         const periodics = applyPeriodicsBrouwer(target.tle, kepler2);
         // Compute position and velocity vectors in the TEME frame.
-        return osculatingToTeme(periodics);
+        osv = osculatingToTeme(periodics);
     } else {
         // Apply secular perturbations due to harmonics in Earth's gravitational potential.
         const kepler1 = applySecularBrouwer(target.tle, target.brouwer, target.secGrav, tSince);
@@ -165,8 +190,13 @@ export function propagateTarget(target, tSince) {
         // Apply periodics due to harmonics in Earth's gravitational potential.
         const periodics = applyPeriodicsBrouwer(target.tle, kepler4, kepler4.incl);
         // Compute position and velocity vectors in the TEME frame.
-        return osculatingToTeme(periodics);
+        osv = osculatingToTeme(periodics);
     }
+
+    target.lastTime = tSince;
+    target.lastOsv = osv;
+
+    return osv;
 }
 
 /**
@@ -176,10 +206,12 @@ export function propagateTarget(target, tSince) {
  *      The target.
  * @param {number} jtUt1 
  *      Julian time (UT1).
+ * @param {number | undefined} minStep
+ *      Minimum step for use of full solution instead of linear extrapolation (seconds).
  */
-export function propagateTargetJulian(target, jtUt1) {
+export function propagateTargetJulian(target, jtUt1, minStep) {
     const minutesSinceEpoch = (jtUt1 - target.tle.jtUt1Epoch) * 1440;
-    return propagateTarget(target, minutesSinceEpoch);
+    return propagateTarget(target, minutesSinceEpoch, minStep);
 }
 
 /**
@@ -189,8 +221,10 @@ export function propagateTargetJulian(target, jtUt1) {
  *      The target.
  * @param {Date} timeStamp 
  *      Julian time (UT1).
+ * @param {number | undefined} minStep
+ *      Minimum step for use of full solution instead of linear extrapolation (seconds).
  */
-export function propagateTargetTs(target, timestamp) {
+export function propagateTargetTs(target, timestamp, minStep) {
     const jtUt1 = timeJulianYmdhms(timestamp.getUTCFullYear(), 
         timestamp.getUTCMonth() + 1,
         timestamp.getUTCDate(),
@@ -198,5 +232,5 @@ export function propagateTargetTs(target, timestamp) {
         timestamp.getUTCMinutes(),
         timestamp.getUTCSeconds() + timestamp.getUTCMilliseconds() * 0.001);
 
-    return propagateTargetJulian(target, jtUt1);
+    return propagateTargetJulian(target, jtUt1, minStep);
 }

@@ -13,9 +13,9 @@
                 "2 25544  51.6420  41.1204 0003425   2.1882  97.3277 15.50126556433334"]);
                 const target = sgp4.createTarget(tle);
                 const minutesSinceEpoch = 1000.0;
-                const osv = sgp4.propagateTarget(target, minutesSinceEpoch);
-                const osv2 = sgp4.propagateTargetJulian(target, 2460316.06404657 + 1000 / 1440);
-                const osv3 = sgp4.propagateTargetTs(target, new Date("2024-01-07T06:12:13.6237"));
+                const osv = sgp4.propagateTarget(target, minutesSinceEpoch, 0);
+                const osv2 = sgp4.propagateTargetJulian(target, 2460316.06404657 + 1000 / 1440, 0);
+                const osv3 = sgp4.propagateTargetTs(target, new Date("2024-01-07T06:12:13.6237"), 0);
                 console.log(tle);
                 console.log(target);
                 console.log(osv);

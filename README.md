@@ -5,6 +5,8 @@ This repository contains an attempt to reimplement the SGP4 and SDP4 algorithms 
 
 For 1000-minute propagation of the entire [CelesTrak](https://celestrak.com/NORAD/elements/) catalogue, the position has an maximum and average errors of 1.3 meters and 0.27 mm, respectively w.r.t. the reference implementation. Quick testing suggests that the implementation is about 30% slower than [satellite.js](https://github.com/shashwatak/satellite-js).
 
+However, for visualization purposes, the implementation provides an option to compute the SGP4/SDP4 solution only when the new the requested time stamp differs from the previous one by given number of seconds. For time stamps closer to the previous full solution, the satellite position is estimated using the previous solved velocity. In visualizations involving thousands of satellites the difference to full solution every frame is not visible when performing full solution only every 10 seconds. The minimum number of seconds between SGP4/SDP4 solutions is given as the last parameter to the propagation methods. The value 0 always leads to SGP4/SDP4 solution being performed.
+
 See dist/simple_test.html and the code below for an example:
 ```
 try {
@@ -14,9 +16,9 @@ try {
     "2 25544  51.6420  41.1204 0003425   2.1882  97.3277 15.50126556433334"]);
     const target = sgp4.createTarget(tle);
     const minutesSinceEpoch = 1000.0;
-    const osv = sgp4.propagateTarget(target, minutesSinceEpoch);
-    const osv2 = sgp4.propagateTargetJulian(target, 2460316.06404657 + 1000 / 1440);
-    const osv3 = sgp4.propagateTargetTs(target, new Date("2024-01-07T06:12:13.6237"));
+    const osv = sgp4.propagateTarget(target, minutesSinceEpoch, 0);
+    const osv2 = sgp4.propagateTargetJulian(target, 2460316.06404657 + 1000 / 1440, 0);
+    const osv3 = sgp4.propagateTargetTs(target, new Date("2024-01-07T06:12:13.6237"), 0);
     console.log(tle);
     console.log(target);
     console.log(osv);

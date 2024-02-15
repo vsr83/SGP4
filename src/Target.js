@@ -71,6 +71,13 @@ export function createTarget(tle) {
  * @returns {Osv} Orbit state vector in TEME frame.
  */
 export function propagateTarget(target, tSince) {
+    if (!(typeof tSince === "number")) {
+        throw {
+            type : SgpErrorType.ERROR_INVALID_TSINCE,
+            message : "tSince parameter " + tSince + " not a number!"
+        };
+    }
+
     if (target.solverType == SolverType.SGP4) {
         // Apply secular perturbations due to harmonics in Earth's gravitational potential.
         const kepler1 = applySecularBrouwer(target.tle, target.brouwer, target.secGrav, tSince);

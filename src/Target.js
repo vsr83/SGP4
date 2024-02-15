@@ -215,12 +215,12 @@ export function propagateTargetJulian(target, jtUt1, minStep) {
 }
 
 /**
- * Propagate target Javascript timestamp.
+ * Propagate target with SGP4/SDP4.
  * 
  * @param {Target} target 
  *      The target.
  * @param {Date} timeStamp 
- *      Julian time (UT1).
+ *      Date object.
  * @param {number | undefined} minStep
  *      Minimum step for use of full solution instead of linear extrapolation (seconds).
  */

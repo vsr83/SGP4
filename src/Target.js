@@ -4,6 +4,7 @@ import { osculatingToTeme } from "../src/Frames.js";
 import { computeThirdBodyParams, applyThirdBodyPerturbations, applyPeriodicsSunMoon } from "../src/SunMoon.js";
 import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, ResonanceType} from "../src/Resonances.js";
 import { SgpErrorType, wgs72Constants} from "../src/Common.js";
+import { timeJulianYmdhms } from "./TLE.js";
 
 /**
  * Enumeration for the solver type.
@@ -166,4 +167,36 @@ export function propagateTarget(target, tSince) {
         // Compute position and velocity vectors in the TEME frame.
         return osculatingToTeme(periodics);
     }
+}
+
+/**
+ * Propagate target with SGP4/SDP4.
+ * 
+ * @param {Target} target 
+ *      The target.
+ * @param {number} jtUt1 
+ *      Julian time (UT1).
+ */
+export function propagateTargetJulian(target, jtUt1) {
+    const minutesSinceEpoch = (jtUt1 - target.tle.jtUt1Epoch) * 1440;
+    return propagateTarget(target, minutesSinceEpoch);
+}
+
+/**
+ * Propagate target Javascript timestamp.
+ * 
+ * @param {Target} target 
+ *      The target.
+ * @param {Date} timeStamp 
+ *      Julian time (UT1).
+ */
+export function propagateTargetTs(target, timestamp) {
+    const jtUt1 = timeJulianYmdhms(timestamp.getUTCFullYear(), 
+        timestamp.getUTCMonth() + 1,
+        timestamp.getUTCDate(),
+        timestamp.getUTCHours(),
+        timestamp.getUTCMinutes(),
+        timestamp.getUTCSeconds() + timestamp.getUTCMilliseconds() * 0.001);
+
+    return propagateTargetJulian(target, jtUt1);
 }

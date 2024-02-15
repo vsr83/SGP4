@@ -1,4 +1,4 @@
 import { tleFromLines } from "./TLE.js";
-import { propagateTarget, createTarget } from "./Target.js";
+import { propagateTarget, propagateTargetJulian, propagateTargetTs, createTarget } from "./Target.js";
 export {tleFromLines};
-export {propagateTarget, createTarget};
+export {propagateTarget, createTarget, propagateTargetJulian, propagateTargetTs};

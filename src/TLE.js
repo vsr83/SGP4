@@ -237,7 +237,7 @@ function dateJulianYmd(year, month, mday)
  *      Second (0-60) floating point.
  * @returns {number} An object with JD and JT for Julian date and time.
  */
-function timeJulianYmdhms(year, month, mday, hour, minute, second)
+export function timeJulianYmdhms(year, month, mday, hour, minute, second)
 {
     const JD = dateJulianYmd(year, month, mday);
     const JT = JD + hour / 24.0 + minute/(24.0 * 60.0) + second/(24.0 * 60.0 * 60.0);

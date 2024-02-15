@@ -3,7 +3,20 @@ Reimplementation of SGP4/SDP4 solution from scratch.
 
 This repository contains an attempt to reimplement the SGP4 and SDP4 algorithms from scratch with an emphasis on trying to keep the relationship between the code and the equations in the references as clear as possible. The result aims to be easier to understand but probably is not as robust nor fast as the existing [implementations](https://github.com/aholinch/sgp4/tree/master). The main motivation for the writing of this code has been my interest in trying to understand the SGP4/SDP4 algorithms and frustation with how difficult the existing implementations are to follow.
 
-For 1000-minute propagation of the entire [CelesTrak](https://celestrak.com/NORAD/elements/) catalogue, the position has an maximum and average errors of 1.3 meters and 0.27 mm, respectively w.r.t. the reference implementation.
+For 1000-minute propagation of the entire [CelesTrak](https://celestrak.com/NORAD/elements/) catalogue, the position has an maximum and average errors of 1.3 meters and 0.27 mm, respectively w.r.t. the reference implementation. Quick testing suggests that the implementation is about 30% slower than [satellite.js](https://github.com/shashwatak/satellite-js).
+
+See dist/simple_test.html and the code below for an example:
+```
+const tle = sgp4.tleFromLines([
+    "ISS (ZARYA)             ",
+    "1 25544U 98067A   24006.56404657  .00018207  00000+0  32478-3 0  9993",
+    "2 25544  51.6420  41.1204 0003425   2.1882  97.3277 15.50126556433334"]);
+const target = sgp4.createTarget(tle);
+const minutesSinceEpoch = 1000.0;
+const osv = sgp4.propagateTarget(target, minutesSinceEpoch);
+const osv2 = sgp4.propagateTargetJulian(target, 2460316.06404657 + 1000 / 1440);
+const osv3 = sgp4.propagateTargetTs(target, new Date("2024-01-07T06:12:13.6237"));
+```
 
 ## References
 1. Vallado - Companion code for Fundamentals of Astrodynamics and Applications, 2013.

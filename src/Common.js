@@ -18,6 +18,25 @@ export const wgs72Constants = {
 };
 
 /**
+ * Enumeration for the solver type.
+ */
+export const SgpErrorType = {
+    ERROR_NONE : 0,
+    // Eccentricity >= 1 or < -0.01
+    ERROR_MEAN_ECCENTRICITY : 1,
+    // Mean motion less than 0.0
+    ERROR_MEAN_MOTION       : 2,
+    // Final eccentricity < 0.0 or > 1.0
+    ERROR_PERT_ECCENTRICITY : 3,
+    // Semi-latus rectum < 0.0
+    ERROR_SEMI_LATUS_RECTUM : 4,
+    // Epoch elements are sub-orbital
+    ERROR_EPOCH_SUBORBITAL  : 5,
+    // Satellite has decayed
+    ERROR_SATELLITE_DECAYED : 6
+};
+
+/**
  * Compute Greenwich Mean Sidereal Time. This is based on the SGP4 implementation by
  * David Vallado. 
  * 

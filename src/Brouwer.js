@@ -1,5 +1,6 @@
 import { wgs72Constants } from "./Common.js";
 import { deg2Rad, createExp } from "./MathUtils.js";
+import { SgpErrorType } from "./Common.js";
 
 /**
  * Compute Brouwer mean motion and semi-major axis from Kozai mean motion.
@@ -161,6 +162,8 @@ export function applySecularBrouwer(tle, brouwer, brouwerDer, deltaTime)
  *      The TLE.
  * @param {Kepler} kepler 
  *      The Keplerian elements after application of secular drag.
+ * @param {number | undefined} ip 
+ *      Inclination to be used instead of the value from the TLE (optional).
  * @returns {OscElements} Osculating elements:
  * - r : Distance from the geocenter (earth radii),
  * - u : Sum of the natural anomaly and the argument of perigee (radians),
@@ -177,6 +180,8 @@ export function applyPeriodicsBrouwer(tle, kepler, ip)
     const beta = Math.sqrt(1 - kepler.ecc ** 2);
     let i0 = deg2Rad(tle.inclination);
 
+    // The reference implementation replaces the TLE inclination for SDP4 with one
+    // obtained after the application of the Sun-Moon periodics.
     if (!(ip === undefined)) {
         i0 = ip;
     }
@@ -237,6 +242,13 @@ export function applyPeriodicsBrouwer(tle, kepler, ip)
     // Semi-latus rectum with long-term periodics. TBD: a
     const pL = kepler.a * (1 - eL * eL);
 
+    if (pL < 0.0) {
+        throw {
+            type : SgpErrorType.ERROR_SEMI_LATUS_RECTUM,
+            message : "Semi-latus rectum " + pL + " negative!"
+        };
+    }
+
     // Now we compute elements with large-period periodics included
     // (rL, uL, OmegaL=Omega, iL=incl, rdotL, rfdotL).
 
@@ -277,6 +289,14 @@ export function applyPeriodicsBrouwer(tle, kepler, ip)
     const ik = kepler.incl + Deltai;
     const rdotk = rdotL + Deltardot;
     const rfdotk = rfdotL + Deltarfdot;
+
+    if (rk < 1.0)
+    {
+        throw {
+            type : SgpErrorType.ERROR_SATELLITE_DECAYED,
+            message : "Satellite orbit decayed!"
+        };
+    }
 
     return {
         r : rk, u : uk, Omega : Omegak, incl : ik, rdot : rdotk, rfdot : rfdotk

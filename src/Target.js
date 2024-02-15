@@ -3,7 +3,7 @@ import { secularDrag, applySecularDrag } from "../src/Drag.js";
 import { osculatingToTeme } from "../src/Frames.js";
 import { computeThirdBodyParams, applyThirdBodyPerturbations, applyPeriodicsSunMoon } from "../src/SunMoon.js";
 import { computeResonanceCoeffs, computeInitialCondition, integrateResonances, ResonanceType} from "../src/Resonances.js";
-import { wgs72Constants} from "../src/Common.js";
+import { SgpErrorType, wgs72Constants} from "../src/Common.js";
 
 /**
  * Enumeration for the solver type.
@@ -12,6 +12,7 @@ export const SolverType = {
     SGP4 : 1,
     SDP4 : 2
 };
+
 /**
  * Check whether SGP4 is applicable to a satellite. If not, SDP4 should be used.
  * 
@@ -75,6 +76,14 @@ export function propagateTarget(target, tSince) {
         const kepler1 = applySecularBrouwer(target.tle, target.brouwer, target.secGrav, tSince);
         // Apply secular perturbations due to drag.
         const kepler2 = applySecularDrag(target.tle, target.brouwer, kepler1, target.dragTerms, tSince);
+
+        if (kepler2.ecc >= 1.0 || kepler2.ecc < -0.001) {
+            throw {
+                type : SgpErrorType.ERROR_PERT_ECCENTRICITY,
+                message : "Eccentricity " + kepler4.ecc + " invalid!"
+            };
+        }
+
         // Apply periodics due to harmonics in Earth's gravitational potential.
         const periodics = applyPeriodicsBrouwer(target.tle, kepler2);
         // Compute position and velocity vectors in the TEME frame.
@@ -94,11 +103,26 @@ export function propagateTarget(target, tSince) {
                 target.integrationState);                    
         }
 
+        if (output.n <= 0) {
+            throw {
+                type : SgpErrorType.ERROR_MEAN_MOTION,
+                message : "Mean motion " + output.n + " invalid!"
+            };
+        }
+
         // Apply secular perturbations due to drag.
         // TODO: Move these to Drag.js.
         const a = Math.pow(wgs72Constants.xke / output.n, 2/3) * Math.pow(1 - target.dragTerms.C1[1] * tSince, 2);
         const n = wgs72Constants.xke / Math.pow(a, 1.5);
         const ecc = kepler2.ecc - target.tle.dragTerm * target.dragTerms.C4 * tSince;
+
+        if (ecc >= 1.0 || ecc < -0.001) {
+            throw {
+                type : SgpErrorType.ERROR_MEAN_ECCENTRICITY,
+                message : "Mean eccentricity " + ecc + " invalid!"
+            };
+        }
+
         let M = (output.M + target.brouwer.meanMotionBrouwer * target.dragTerms.t2cof * tSince * tSince) % (2.0 * Math.PI);
 
         const kepler3 = {
@@ -121,6 +145,13 @@ export function propagateTarget(target, tSince) {
             kepler4.incl *= -1;
             kepler4.Omega += Math.PI;
             kepler4.omega -= Math.PI;
+        }
+
+        if (kepler4.ecc < 0.0 || kepler4.ecc > 1.0) {
+            throw {
+                type : SgpErrorType.ERROR_PERT_ECCENTRICITY,
+                message : "Eccentricity " + kepler4.ecc + " invalid!"
+            };
         }
 
         // Apply periodics due to harmonics in Earth's gravitational potential.

@@ -1,6 +1,6 @@
-import { wgs72Constants } from "./Common.js";
-import { gstime } from "./Common.js";
-
+import { wgs72Constants, gstime } from "./Common.js";
+import { nutationTerms } from "./Nutation.js";
+import { sind, cosd } from "./MathUtils.js";
 /**
  * Convert osculating elements to the TEME frame.
  * 
@@ -96,7 +96,7 @@ export function coordTemePef(osvTeme) {
  *      Nutation parameters to speed up the computation.
  * @returns {Osv} Orbit state vector in ToD frame.
  */
-export function coordTemeTod(osvTeme) {
+export function coordTemeTod(osvTeme, nutParams) {
     if (nutParams === undefined)
     {
         const T = (osvTeme.JT - 2451545.0) / 36525.0;
@@ -112,6 +112,88 @@ export function coordTemeTod(osvTeme) {
 }
 
 /**
+ * Convert coordinates from True-of-Date (ToD) to the Mean-of-Date (MoD) frame.
+ * 
+ * @param {Osv} osv
+ *      Orbit state vector with fields r, v and JT in ToD frame.
+ *      Nutation has maximum angle around 20 arcseconds with about 18 
+ *      year period so the time standard of the Julian time does not matter.
+ * @param {Object} nutTerms 
+ *      Nutation terms object with fields eps, deps and dpsi. If empty, nutation 
+ *      is computed.
+ * @returns Object r, v, JT fields for position, velocity and Julian date.
+ */
+export function coordTemeJ2000(osv, nutTerms) {
+    const osvTod = coordTemeTod(osv, nutTerms);
+    const osvMod = coordTodMod(osv, nutTerms);
+    const osvJ2000 = coordModJ2000(osv);
+
+    return osvJ2000;
+}
+
+/**
+ * Convert coordinates from True-of-Date (ToD) to the Mean-of-Date (MoD) frame.
+ * 
+ * @param {Osv} osv
+ *      Orbit state vector with fields r, v and JT in ToD frame.
+ *      Nutation has maximum angle around 20 arcseconds with about 18 
+ *      year period so the time standard of the Julian time does not matter.
+ * @param {Object} nutTerms 
+ *      Nutation terms object with fields eps, deps and dpsi. If empty, nutation 
+ *      is computed.
+ * @returns Object r, v, JT fields for position, velocity and Julian date.
+ */
+function coordTodMod(osv, nutTerms)
+{
+    // Julian centuries after J2000.0 epoch.
+    const T = (osv.JT - 2451545.0) / 36525.0;
+
+    if (nutTerms === undefined)
+    {
+        nutTerms = nutationTerms(T);
+    }
+
+    const rMod = rotateCart1d(rotateCart3d(rotateCart1d(osv.r, nutTerms.eps + nutTerms.deps), 
+        nutTerms.dpsi), -nutTerms.eps);
+    const vMod = rotateCart1d(rotateCart3d(rotateCart1d(osv.v, nutTerms.eps + nutTerms.deps), 
+        nutTerms.dpsi), -nutTerms.eps);
+
+    return {r : rMod, v : vMod, JT : osv.JT};
+}
+
+/**
+ * Convert coordinates from Mean-of-Date (MoD) to the J2000 frame.
+ * 
+ * References:
+ * [1] Lieske, J.  - Precession matrix based on IAU/1976/ system of 
+ * astronomical constants, Astronomy and Astrophysics vol. 73, no. 3, 
+ * Mar 1979, p.282-284.
+ * 
+ * @param {Osv} osv
+ *      Orbit state vector with fields r, v and JT in J2000 frame.
+ *      The rate of precession is less than an arcminute per year so the 
+ *      time standard of the Julian time does not matter.
+ * 
+ * @returns Object r, v, JT fields for position, velocity and Julian date.
+ */
+function coordModJ2000(osv)
+{
+    // Julian centuries after J2000.0 epoch.
+    const T = (osv.JT - 2451545.0) / 36525.0;
+    const T2 = T*T;
+    const T3 = T2*T;
+
+    const z =      0.6406161388 * T + 3.0407777777e-04 * T2 + 5.0563888888e-06 * T3;
+    const theta =  0.5567530277 * T - 1.1851388888e-04 * T2 - 1.1620277777e-05 * T3;
+    const zeta =   0.6406161388 * T + 8.3855555555e-05 * T2 + 4.9994444444e-06 * T3;
+
+    const rJ2000 = rotateCart3d(rotateCart2d(rotateCart3d(osv.r, z), -theta), zeta);
+    const vJ2000 = rotateCart3d(rotateCart2d(rotateCart3d(osv.v, z), -theta), zeta);
+
+    return {r : rJ2000, v : vJ2000, JT : osv.JT};
+}
+
+/**
  * Apply rotation w.r.t. the third coordinate.
  * 
  * @param {number[]} p 
@@ -124,5 +206,53 @@ function rotateCart3dRad(p, angle)
 {
     return [ Math.cos(angle) * p[0] + Math.sin(angle) * p[1], 
             -Math.sin(angle) * p[0] + Math.cos(angle) * p[1],
+            p[2]];
+}
+
+/**
+ * Create rotation matrix w.r.t. the first coordinate.
+ * 
+ * @param {*} p 
+ *      Vector.
+ * @param {*} angle
+ *      Angle in degrees. 
+ * @returns The rotated vector.
+ */
+export function rotateCart1d(p, angle)
+{
+    return [p[0], 
+            cosd(angle) * p[1] + sind(angle) * p[2],
+            -sind(angle) * p[1] + cosd(angle) * p[2]];
+}
+
+/**
+ * Create rotation matrix w.r.t. the second coordinate.
+ * 
+ * @param {*} p 
+ *      Vector.
+ * @param {*} angle
+ *      Angle in degrees. 
+ * @returns The rotated vector.
+ */
+export function rotateCart2d(p, angle)
+{
+    return [cosd(angle) * p[0] - sind(angle) * p[2], 
+            p[1],
+            sind(angle) * p[0] + cosd(angle) * p[2]];
+}
+
+/**
+ * Create rotation matrix w.r.t. the third coordinate.
+ * 
+ * @param {*} p 
+ *      Vector.
+ * @param {*} angle
+ *      Angle in degrees. 
+ * @returns The rotated vector.
+ */
+export function rotateCart3d(p, angle)
+{
+    return [cosd(angle) * p[0] + sind(angle) * p[1], 
+            -sind(angle) * p[0] + cosd(angle) * p[1],
             p[2]];
 }

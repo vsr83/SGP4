@@ -86,7 +86,7 @@ export function propagateTarget(target, tSince, minStep) {
     }
 
     const deltaTimeSec = 60 * (tSince - target.lastTime);
-    const jtUt1 = target.tle.jtUt1Epoch + tSince / 86400.0;
+    const jtUt1 = target.tle.jtUt1Epoch + tSince / 1440.0;
 
     if (target.lastTime === undefined)
     {

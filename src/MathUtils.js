@@ -44,3 +44,27 @@ export function createExp(factor, n)
 
     return array;
 }
+
+/**
+ * Compute sin of argument in degrees.
+ * 
+ * @param {*} angle 
+ *      The argument in degrees.
+ * @returns The value.
+ */
+export function sind(angle)
+{
+    return Math.sin(angle * Math.PI / 180.0);
+}
+
+/**
+ * Compute cos of argument in degrees.
+ * 
+ * @param {*} angle 
+ *      The argument in degrees.
+ * @returns The value.
+ */
+export function cosd(angle)
+{
+    return Math.cos(angle * Math.PI / 180.0);
+}

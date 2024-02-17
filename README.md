@@ -36,4 +36,5 @@ try {
 4. Lane, Hoots - General Perturbation Theories Derived from the 1965 Lane Drag Theory, Project Space Track, 1979 [link](https://apps.dtic.mil/sti/citations/ADA081264).
 5. Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in the U.S. Space Surveillance System, Journal of Guidance, Control and Dynamics, Vol 27, No.2. 174-185 March-April 2004 [link](https://arc.aiaa.org/doi/10.2514/1.9161).
 6. Hujsak - A Restricted Four Body Solution for Resonating Satellites without Drag, Project Space Track, 1979 [link](https://apps.dtic.mil/sti/citations/ADA081263).
-7. Vallado, Crawford, Hujsak - Revisiting Spacetrack Report #3,  American Institute of Aeronautics and Astronautics, AIAA 2006-6753, 2006.
+7. Vallado, Crawford, Hujsak - Revisiting Spacetrack Report #3,  American Institute of Aeronautics and Astronautics, AIAA 2006-6753, 2006 [link](https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753.pdf).
+8. E. Suirana, J. Zoronoza, M. Hernandez-Pajares - GNSS Data Processing - Volume I: Fundamentals and Algorithms, ESA 2013 [link](https://gssc.esa.int/navipedia/GNSS_Book/ESA_GNSS-Book_TM-23_Vol_I.pdf).

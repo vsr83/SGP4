@@ -88,7 +88,7 @@ export function coordTemePef(osvTeme) {
  * American Institute of Aeronautics and Astronautics, AIAA 2006-6753,  
  * 2006.
  * [2] E. Suirana, J. Zoronoza, M. Hernandez-Pajares - GNSS Data Processing -
- * Volume I: Fundamentals and Algorithms, ESA 2013.  * 
+ * Volume I: Fundamentals and Algorithms, ESA 2013.  
  * @param {Osv} osvTeme 
  *      Orbit state vector in TEME frame.
  * @param {Object | undefined} nutParams 

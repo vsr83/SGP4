@@ -98,7 +98,7 @@ export function coordTemePef(osvTeme) {
 export function coordTemeTod(osvTeme) {
     if (nutParams === undefined)
     {
-        const T = (JT - 2451545.0) / 36525.0;
+        const T = (osvTeme.JT - 2451545.0) / 36525.0;
         nutParams = nutationTerms(T);
     }    
     // GAST82 = Eqe82 + GMST82

@@ -99,7 +99,7 @@ export function secularRatesBrouwer(tle, brouwer)
                  + 0.1875 * k2 * k2 * (7 - 114 * theta[2] + 395 * theta[4]) / (a[4] * eta[8])
                  + 1.25 * k4 * (3 - 36 * theta[2] + 49 * theta[4]) / (a[4] * eta[8]);
     let OmegaDot = -3 * k2 * theta[1] / (a[2] * eta[4])
-                 + 1.5 * k2 * k2 * (4 * theta[1] - 19*theta[3]) / (a[4] * eta[8])
+                 + 1.5 * k2 * k2 * (4 * theta[1] - 19 * theta[3]) / (a[4] * eta[8])
                  + 2.5 * k4 * (3 * theta[1] - 7 * theta[3]) / (a[4] * eta[8]);
 
     MDot *= brouwer.meanMotionBrouwer;

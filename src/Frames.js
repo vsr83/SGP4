@@ -1,4 +1,5 @@
 import { wgs72Constants } from "./Common.js";
+import { gstime } from "./Common.js";
 
 /**
  * Convert osculating elements to the TEME frame.

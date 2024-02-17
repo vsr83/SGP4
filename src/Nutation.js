@@ -174,8 +174,8 @@ export function nutationTerms(T)
         // Equation (A.25) terms (A_0j + A_1j * T) * sin(\sum_i k_ji * a_i)
         //                       (B_0j + B_1j * T) * cos(\sum_i k_ji * a_i)
         const angle = data[KJ1] * a_1 + data[KJ2] * a_2 + data[KJ3] * a_3 + data[KJ4] * a_4 + data[KJ5] * a_5;
-        dpsi = dpsi + factor * (data[A0J] + data[A1J] * T) * sind(angle);
-        deps = deps + factor * (data[B0J] + data[B1J] * T) * cosd(angle);
+        dpsi = dpsi + factor * (data[A0J] + data[A1J] * T) * Math.sin(angle * Math.PI / 180.0);
+        deps = deps + factor * (data[B0J] + data[B1J] * T) * Math.cos(angle * Math.PI / 180.0);
     }
     return {eps : eps, deps : deps % 360.0, dpsi : dpsi % 360.0};
 }

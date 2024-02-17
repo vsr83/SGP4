@@ -86,6 +86,7 @@ export function propagateTarget(target, tSince, minStep) {
     }
 
     const deltaTimeSec = 60 * (tSince - target.lastTime);
+    const jtUt1 = tle.jtUt1Epoch + tSince / 86400.0;
 
     if (target.lastTime === undefined)
     {
@@ -195,6 +196,7 @@ export function propagateTarget(target, tSince, minStep) {
 
     target.lastTime = tSince;
     target.lastOsv = osv;
+    osv.JT = jtUt1;
 
     return osv;
 }

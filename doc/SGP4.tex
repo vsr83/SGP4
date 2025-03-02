@@ -1,0 +1,957 @@
+\documentclass [12pt, a4paper] {article}
+
+%Babel tekee kuulemma jotain typerää, joten seuraava on välttämätöntä.
+\usepackage[all, knot] {xy}
+\let\oldxy\xy\def\xy{\begingroup\catcode`\"12\oldxy}
+\let\oldendxy\endxy\def\endxy{\oldendxy\endgroup} 
+\xyoption {arc}
+\usepackage [latin1] {inputenc}
+\usepackage [T1] {fontenc}
+\usepackage [english] {babel}
+\usepackage [dvips] {graphicx}
+\usepackage {amsfonts}
+\usepackage {amssymb}
+\usepackage {amsmath}
+\usepackage {verbatim}
+\usepackage {fancyhdr}
+\usepackage {psfrag}
+\usepackage {listings}
+\usepackage {eso-pic}
+%\usepackage[urw-garamond]{mathdesign}
+\usepackage[small,bf]{caption}
+\usepackage{enumitem}
+\usepackage{stix}
+\usepackage{lipsum}
+\usepackage{tikz}
+
+\newcommand{\BackgroundPic}{
+%  \put(0,0){
+%    \parbox[b][\paperheight]{\paperwidth}{
+%      \vfill
+%      \centering
+%      \includegraphics[width=\paperwidth, height=\paperheight, keepaspectratio%]{
+%kansilehti.ps}
+%    }
+%  }
+%  \textbf{SMG-5156 - Electromagnetic Modelling I}\\
+%  \textbf{Exercise 1 - Problem 4}\\
+%  \textbf{Ville Räisänen}
+%\end {flushleft}
+
+%  \put(42, 810){\textbf{SMG-5156 - Electromagnetic Modelling I}}
+%  \put(42, 797){\textbf{Exercise 1 - Problem 1}}
+%  \put(42, 784){\textbf{Ville Räisänen}}
+%  \put(445, 810){\textbf{Please, do not distribute!}}
+}
+
+\addtolength{\evensidemargin}{-1cm}
+\addtolength{\oddsidemargin}{-1cm}
+\addtolength{\marginparwidth}{-2.0cm}
+\addtolength{\topmargin}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{2cm}
+\addtolength{\columnsep}{0.5cm}
+
+ 
+\lhead {Notes on the SGP4/SDP4 Solution \\Ville Räisänen}
+\rhead {\today}
+\thispagestyle{fancy}
+
+\newtheorem {problem} {Problem}
+\newtheorem {theorem} {Theorem}
+\newtheorem {definition} {Definition}
+
+\newcommand{\vu}[1]
+{
+	\mathbf{\hat #1}
+}
+\newcommand{\vf}[1]
+{
+	\mathbf{\vec #1}
+}
+\newcommand{\mc}[1]
+{
+	\mathcal{#1}
+}
+\newcommand{\vc}[1]
+{
+	\boldsymbol{#1}
+}
+\newcommand{\vcc}[1]
+{
+	\widetilde{\boldsymbol{#1}}
+}
+\newcommand{\cc}[1]
+{
+	\widetilde{#1}
+}
+\newcommand{\sgn}
+{
+  \textrm{sgn}\:
+}
+\newcommand{\pdiff}[2]
+{
+	\frac{\partial #1}{\partial #2}
+}
+\newcommand{\diff}[2]
+{
+	\frac{d #1}{d #2}
+}
+\newcommand{\vali}
+{
+  \begin {displaymath}\:\end{displaymath}
+}
+\newcommand{\norm}[2]
+{
+  ||#1||_{#2}
+}
+
+\newcommand{\solution}
+{
+   {\textbf{\textrm{Solution:}}}
+}
+\newcommand{\motivation}
+{
+  {\textbf{\textrm{Motivation:}}}
+}
+
+\begin {document}
+
+\section{Two-Body Problem}
+To discuss the solution presented in \cite{brouwer}, we need to formulate the two-body problem in terms
+of Delaunay elements. Thus, this section is dedicated to canonical transformations and the Hamilton-Jacobi
+Equation. Starting from a Hamiltonian formulation in spherical polar coordinates, we will first use
+Hamilton-Jacobi equations to derive canonical coordinates corresponding to zero Hamiltonian and then
+use a canonical transformation to derive a Hamiltonian formulation in terms of Delaunay Elements.
+
+The discussion in this section is roughly based on sections 6 and 7 of \cite{karkkainen}. 
+\subsection{Hamiltonian Formulation}
+Consider the problem of a point particle with mass $m$ in a gravitational potential $V$, where the kinetic
+and potential energy can be expressed via the equations
+\begin {eqnarray}
+  T &=&= \frac{m}{2}(\dot r^2 + r^2\dot\theta^2 + r^2\cos^2\theta \dot\phi) \\
+  V &=& -\frac{\mu m}{r}
+\end {eqnarray}
+in terms of spherical polar coordinates $(r, \theta, \phi)$ and canonical momentums
+\begin {eqnarray}
+  p_r &=& \pdiff{T}{\dot r} = m\dot r\\
+  p_\theta &=& \pdiff{T}{\dot\theta} = mr^2\dot\theta\\
+  p_\phi &=& \pdiff{T}{\dot\phi} = mr^2\cos^2\theta \dot\phi.
+\end {eqnarray}
+Thus, the Hamiltonian (using the notation in \cite{brouwer}) can be expressed
+\begin {eqnarray}
+  \label{eq:hamiltonian_spherical}
+  F(r, \theta, \phi, p_r, p_\theta, p_\phi) &=& T + V = \frac{1}{2m}\left(p_r^2 + \frac{p_\theta^2}{r^2} + \frac{p_\phi^2}{r^2\cos^2\theta}\right) - \frac{\mu m}{r}.
+\end {eqnarray}
+In this section, we will use canonical transformations and the Hamilton-Jacobi equation to derive
+the Hamiltonian in terms of canonical coordinates and momentums called Delaunay Elements.
+
+\subsubsection{Canonical Transformations}
+Suppose $F^*$ is a Hamiltonian obtained from an another Hamiltonian $F$ with a \textbf{generating 
+function} (called \textbf{determining function} in \cite{brouwer}) $S$. Then,
+\begin {eqnarray}
+  F^*(\vc q', \vc p') = F(\vc q, \vc p) + \pdiff{S}{t} 
+\end {eqnarray}
+In this document, we only use generating functions of the type
+$S= S(\vc q, \vc p')$, which satisfy
+\begin {eqnarray}
+  p_i = \pdiff{S}{q_i},\quad
+  q_i' = \pdiff{S}{p_i'}
+\end {eqnarray}
+\subsubsection{Hamilton-Jacobi Equation}
+With Hamilton-Jacobi equation, we can derive canonical coordinates, which do not appear
+explicitly in the transformed Hamiltonian. Then, each canonical coordinate and momentum
+is independent of time. That is, for $F=F(r,\theta,\phi,p_r,p_\theta,p_\phi)$ we wish find
+a generating function $S$ such that
+\begin {eqnarray}
+  \label{eq:hjacobi1}
+  F\left(r, \theta, \phi, \pdiff{S}{r}, \pdiff{S}{\theta}, \pdiff{S}{\phi}\right) + \pdiff{S}{t} = 0.
+\end {eqnarray}
+Substitution to $(\ref{eq:hamiltonian_spherical})$, yields
+\begin {eqnarray}
+  \label{eq:hjacobi2}  
+  \frac{1}{2m}\left[
+    \left(\pdiff{S}{r}\right)^2
+    +
+    \frac{1}{r^2}
+    \left(\pdiff{S}{\theta}\right)^2
+    +
+    \frac{1}{r^2\cos^2\theta}
+    \left(\pdiff{S}{\phi}\right)^2
+    \right]
+  +
+  \pdiff{S}{t}
+  -
+  \frac{\mu m}{r}
+  =
+  0.
+\end {eqnarray}
+We attempt to solve $(\ref{eq:hjacobi2})$ via separation of variables
+\begin {eqnarray}
+  S(r, \theta, \phi, t) = S_r(r) + S_\theta(\theta) + S_\phi(\phi) + S_t(t).
+\end {eqnarray}
+This yields
+\begin {eqnarray}
+  \label{eq:hjacobi3}  
+  \left(\diff{S_r}{r}\right)^2
+  +
+  \frac{1}{r^2}
+  \left(\diff{S_\theta}{\theta}\right)^2
+  +
+  \frac{1}{r^2\cos^2\theta}
+  \left(\diff{S_\phi}{\phi}\right)^2
+  =
+  2m
+  \left(
+  -\diff{S_t}{t}
+  +
+  \frac{\mu m}{r}
+  \right).
+\end {eqnarray}
+The dependence w.r.t. variables $\phi$ and $t$ is limited to $dS_\phi/d\phi$ and $dS_t/dt$. Thus, there exists
+$\alpha_2$ and $\alpha_1$ such that
+\begin {eqnarray}
+  \frac{dS_\phi}{d\phi} = -\alpha_2,\quad
+  \frac{dS_t}{dt} = -\alpha_1.
+\end {eqnarray}
+The equation $(\ref{eq:hjacobi3})$ can be now written
+\begin {eqnarray}
+  \label{eq:hjacobi4}  
+  \left(\diff{S_r}{r}\right)^2
+  +
+  \underbrace
+      {    
+  \frac{1}{r^2}
+  \left(\diff{S_\theta}{\theta}\right)^2
+  +
+  \frac{\alpha_2^2}{r^2\cos^2\theta}
+  }_{\alpha_1/r^2}
+  =
+  2m
+  \left(
+  \alpha_1
+  +
+  \frac{\mu m}{r}
+  \right)
+\end {eqnarray}
+and denoting the middle two terms with $\alpha_1/r^2$ we obtain
+\begin {eqnarray}
+  \label{eq:hjacobi_sr}
+  \diff{S_r}{r}
+  =
+  \sqrt{
+  2m
+  \left(
+  \alpha_1 + \frac{\mu m}{r}
+  \right)
+  -
+  \frac{\alpha_1}{r^2}
+  }.
+\end {eqnarray}
+Similarly for $S_\theta$
+\begin {eqnarray}
+  \left(\diff{S_\theta}{\theta}\right)^2
+  &=&
+  2mr^2
+  \left(
+  \alpha_1
+  +
+  \frac{\mu m}{r}
+  \right)
+  -r^2\left(\diff{S_r}{r}\right)^2  
+  -
+  \frac{\alpha_2^2}{\cos^2\theta}
+  =
+  \alpha_3^2 + \frac{\alpha_2^2}{\cos^2\theta}.
+\end {eqnarray}
+or
+\begin {eqnarray}
+  \diff{S_\theta}{\theta}
+  =
+  \sqrt{\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}}
+\end {eqnarray}
+The generating function satisfying $(\ref{eq:hjacobi1})$ can be thus written
+\begin {eqnarray}
+  S= -\alpha_1t + \alpha_2\phi
+  +
+  \int d\theta\sqrt{\alpha_3^2
+    - \frac{\alpha_2^2}{\cos^2\theta}}
+  +
+  \int dr 
+  \sqrt{
+    2m
+    \left(
+  \alpha_1 + \frac{\mu m}{r}
+  \right)
+  -
+  \frac{\alpha_1}{r^2}
+  }
+\end {eqnarray}
+We will select the canonical momentums
+\begin {eqnarray}
+  \label{eq:hjacobi_p1}
+  p'_1 &:=& \alpha_1 = mh
+  \\
+  \label{eq:hjacobi_p2}
+  p'_2 &:=& \alpha_2 = m\sqrt{a\mu(1-e^2)}\cos I
+  \\
+  \label{eq:hjacobi_p3}
+  p'_3 &:=& \alpha_3 = m\sqrt{a\mu(1-e^2)}
+\end {eqnarray}
+To derive $(\ref{eq:hjacobi_p1})$, we can compute
+\begin {eqnarray}
+  \alpha_1 = -\pdiff{S}{t} = F = T + V = mh,
+\end {eqnarray}
+where $h = v^2/2 - \mu/r$ is the \textbf{energy integral}.
+
+Derivation of $(\ref{eq:hjacobi_p2})$ is somewhat more complicated. Note that in spherical polar coordinates
+\begin {eqnarray}
+  \nonumber
+  x &=& r\cos\theta\cos\phi\\\nonumber
+  y &=& r\cos\theta\sin\phi\\\nonumber
+  z &=& r\sin\theta
+\end {eqnarray}
+and
+\begin {eqnarray}
+  \dot x &=& \dot r\:\cos\theta\cos\phi - r\dot\theta\sin\theta\cos\phi - r\dot\phi\cos\theta\sin\phi
+  \\\nonumber
+  \dot y &=& \dot r\:\cos\theta\sin\phi - r\dot\theta\sin\theta\sin\phi \:+ r\dot\phi\cos\theta\cos\phi
+  \\\nonumber
+  \dot z &=& \dot r\:\sin\theta  \quad\quad\: + r\dot\theta\cos\theta
+\end {eqnarray}
+Now, we can note that that the z-component of the angular momentum vector can be expanded in
+spherical polar coordinates
+\begin {eqnarray}
+  k_z = (\vc r\times\dot{\vc r})\cdot\hat z
+  &=&
+  \begin {vmatrix}
+    0 & 0 & 1 \\
+    x & y & 0 \\
+    \dot x & \dot y & 0
+  \end {vmatrix}
+  \\\nonumber
+  &=& x\dot y - y\dot x
+  \\\nonumber
+  &=&
+  r\cos\theta\cos\phi(\dot r\cos\theta\sin\phi - r\dot\theta\sin\theta\sin\phi + r\dot\phi\cos\theta\cos\phi)
+  \\\nonumber
+  &-&
+  r\cos\theta\sin\phi(\dot r\cos\theta\cos\phi - r\dot\theta\sin\theta\cos\phi - r\dot\phi\cos\theta\sin\phi)
+  \\\nonumber
+  &=&
+  r\dot r\cos^2\theta(\cos\phi\sin\phi - \cos\phi\sin\phi)
+  \\\nonumber
+  &+&
+  r^2\dot\theta\cos\phi\sin\phi(\sin\theta\cos\theta - \sin\theta\cos\theta)
+  \\\nonumber
+  &+&
+  r^2\dot\phi\cos^2\theta(\cos^2\phi + \sin^2\phi)
+  \\\nonumber
+  &=&
+  r^2\cos^2\theta\dot\phi.
+\end {eqnarray}
+On the other hand, for elliptic orbits
+\begin {eqnarray}
+  a &=& \frac{k^2}{\mu(1 - e^2)},
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \alpha_2 = \pdiff{S}{\phi} = p_\phi = mr^2\cos^2\theta\dot\phi = mk_z
+  =
+  m\sqrt{a\mu(1 - e^2)}\cos I
+\end {eqnarray}
+To derive $(\ref{eq:hjacobi_p3})$, we can compute
+\begin {eqnarray}
+  \alpha_3
+  &=&
+  \sqrt{\left(\pdiff{S}{\theta}\right)^2 + \frac{\alpha_2^2}{\cos^2\theta}}
+  \\\nonumber
+  &=&
+  \sqrt{p_\theta^2 + \frac{p\phi^2}{\cos^2\theta}}
+  \\\nonumber
+  &=& mr^2\sqrt{\dot\theta^2 + \cos^2\theta\dot\phi^2}
+  = mr^2\dot f = mk
+  = m\sqrt{a\mu(1 - e^2)},
+\end {eqnarray}
+where $\dot f=\dot\theta^2 + \cos^2\theta\dot\phi^2$ is the time derivative of the natural anomaly
+since the sum is the square of total scalar angular speed.
+
+The new canonical coordinates can be computed
+\begin {eqnarray}
+  q_1' = \pdiff{S}{\alpha_1}
+  &=& -t + \pdiff{}{\alpha_1}\int dr\sqrt{2m\left(\alpha_1 + \frac{m\mu}{r}\right) - \frac{\alpha_3^2}{r^2}}
+  \\\nonumber
+  &=&
+  -t + \int m\left[2m\left(\alpha_1 + \frac{m\mu}{r}\right) - \frac{\alpha_3^2}{r^2}\right]^{-1/2}dr
+  \\\nonumber
+  &=& -t + I_1
+  \\
+  q_2' = \pdiff{S}{\alpha_2}
+  &=& \phi + \pdiff{}{\alpha_2}\int d\theta\sqrt{\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}}
+  \\\nonumber
+  &=& \phi - \int\frac{\alpha_2}{\cos^2\theta}
+  \left(\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}\right)^{-1/2}d\theta
+  \\\nonumber
+  &=& \phi - I_2\alpha_2
+  \\
+  q_3' = \pdiff{S}{\alpha_3}
+  &=&
+  \pdiff{}{\alpha_3}\int\sqrt{\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}}d\theta
+  +
+  \pdiff{}{\alpha_3}\int\sqrt{2m\left(\alpha_1 + \frac{\mu m}{r}\right) - \frac{\alpha_3^2}{r^2}}dr
+  \\\nonumber
+  &=&
+  \alpha_3\int\left(\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}\right)^{-1/2}d\theta
+  -
+  \alpha_3\int\frac{1}{r}
+  \left[2m\left(\alpha_1 + \frac{\mu m}{r}\right) - \frac{\alpha_3^2}{r^2}\right]^{-1/2}dr
+  \\\nonumber
+  &=& \alpha_3I_4 - \frac{\alpha_3}{m}I_3.
+\end {eqnarray}
+The evaluation of the integrals $I_1, I_2, I_3, I_4$ is non-trivial and will be performed next.
+
+For $I_1$, substituting
+$(\ref{eq:hjacobi_p1})$, $(\ref{eq:hjacobi_p3})$ and $mh= -\mu m/2a$, we obtain
+\begin {eqnarray}
+  I_1 &=& m\int\left[2m\left(mh + \frac{m\mu}{r}\right) - \frac{m^2}{r^2}(a\mu(1-e^2))\right]^{-1/2}dr
+  \\\nonumber
+  &=&
+  \int m\:dr\left[
+    2m\left(-\frac{\mu m}{2a} + \frac{\mu m}{r} - \frac{m^2a\mu(1-e^2)}{r^2}\right)
+    \right]^{-1/2}
+  \\\nonumber
+  &=&
+  \frac{1}{\sqrt{\mu}}\int\frac{r\:dr}{\sqrt{-r^2/a + 2r - a(1-e^2)}}
+\end {eqnarray}
+Substitute $r = a(1 - e\cos E)$, which leads to $dr = ae\sin E\:dE$ and
+\begin {eqnarray}
+  I_1 &=& \frac{1}{\sqrt{\mu}}\int
+  \frac{a(1 - e\cos E)\:ae\sin E\:dE}
+       {\sqrt{-a(1 - e\cos E)^2 + 2a(1 - e\cos E) - a(1 - e^2)}}
+       \\\nonumber
+       &=& \frac{a^{3/2}}{\sqrt{\mu}}\int(1 - e\cos E)\:dE
+       \\\nonumber
+       &=& \frac{a^{3/2}}{\sqrt{\mu}}(E - e\sin E)
+\end {eqnarray}
+Application of Kepler's equation and Kepler's third law $n = \sqrt{\mu/a^3}$, we obtain
+the additive inverse for the time of perihelion
+\begin {eqnarray}
+  q_1' = -t + \frac{M}{n} = -\tau.
+\end {eqnarray}
+For $I_2$, it follows from
+$(\ref{eq:hjacobi_p2})$, $(\ref{eq:hjacobi_p3})$ that $\alpha_2/\alpha_3 = \cos I$
+\begin {eqnarray}
+  \alpha_2I_2
+  =
+  \int\frac{\alpha_2}{\cos^2\theta\sqrt{\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}}}
+  %\left(
+  %\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}
+  %\right)^{-1/2}d\theta
+%  \\\nonumber
+  %  &=&
+  =
+  \frac{\alpha_2}{\alpha_3}
+  \int\frac{d\theta}{\cos^2\theta\sqrt{1 - \frac{(\alpha_2/\alpha_3)^2}{\cos^2\theta}}}
+%  \\\nonumber
+  %  &=&
+  =
+  \int\frac{\cos I d\theta}{\cos^2\theta\sqrt{1 - \frac{cos^2I}{\cos^2\theta}}}
+\end {eqnarray}
+\begin {figure}[h]
+  \begin {center}
+    \begin{tikzpicture}
+      \draw[thick] (0, 0) arc(270:290:10cm);
+      \draw[thick] (0.6, 0) arc(0:20:1cm);
+      \draw[thick] (0, 0) arc(300:320:12.5cm);
+      \draw[thick] (3, 0) arc(350:370:9cm);
+      \draw[thick] (2.8, 0.4) arc(350:360:2cm);
+            \draw[thick] (2.83, 0.75) arc(280:290:1.55cm);
+      \draw (1.5, 1.8) node[below, rotate=40] {$\eta = \omega + f$};
+      \draw (1.75, 0.2) node[below] {$\chi$};
+      \draw (1, 0.6) node[below] {$I$};
+      \draw (3.4, 1.8) node[below] {$\theta$};
+    \end {tikzpicture}
+    \caption{\label{fig:napier}The relationship between the angles $\eta, \theta$ and $\chi$.}
+  \end {center}
+\end {figure}
+
+Via application of Napier's rule to the angles in Figure \ref{fig:napier}, we obtain
+\begin {eqnarray}
+  \sin\chi = \cot(\pi/2 - \theta)\cot I = \tan\theta\cot I
+\end {eqnarray}
+and
+\begin {eqnarray}
+  \frac{d\theta}{\cos^2\theta} = \tan i\cos\chi d\chi.
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \alpha_2I_2
+  =
+  \int\frac{\cos I\tan I\cos\chi d\chi}{\sqrt{1 - cos^2I(1 + \tan^2 I\sin^2\chi)}}
+  =
+  \int\frac{\sin I\cos\chi d\chi}{\sqrt{\sin^2 I(1 - \sin^2\chi)}}
+  =
+  \int d\chi
+  =
+  \chi.
+\end {eqnarray}
+and
+\begin {eqnarray}
+  q_2' &=& \phi - \alpha_2I_2 = \phi - \chi = \Omega.
+\end {eqnarray}
+For $I_3$,
+\begin {eqnarray}
+  I_3 &=& m\int\frac{1}{r^2}\left[
+    2m\left(-\frac{\mu m}{2a} + \frac{\mu m}{r}\right) - m^2 \frac{a\mu(1 - e^2)}{r^2}
+    \right]^{-1/2}dr
+  \\\nonumber
+  &=&
+  \frac{1}{\sqrt{\mu}}\int \frac{dr}{r\sqrt{-r^2/a + 2r - a(1- e^2)}}
+\end {eqnarray}
+Substitute $r = a(1 - e\cos E), dr= ae\sin E dE$, to obtain
+\begin {eqnarray}
+  I_3 &=&\frac{1}{\sqrt{\mu}}\int\frac{ae\sin E dE}{a(1 - e\cos E)\sqrt{-a(1 - 2e\cos E + e^2\cos^2E) + 2a(1 - e\cos E) - a(1 - e^2)}}
+  \nonumber\\
+  &=&
+  \frac{1}{\sqrt{\mu}}\int\frac{e\sin E}{(1 - e\cos E)\sqrt{a(e^2\sin^2 E)}}
+  \\\nonumber
+  &=& \frac{1}{\sqrt{a\mu}}\int\frac{\sin E dE}{\sin E(1 - e\cos E)}
+  \\\nonumber
+  &=& \frac{1}{\sqrt{a\mu(1 - e^2)}}\int\frac{\sqrt{1 - e^2}dE}{1 - e\cos E}
+\end {eqnarray}
+Substituting $\sin f = \sqrt{1 - e^2}\sin E / (1 - e\cos E)$ leads to
+\begin {eqnarray}
+  \cos f df = \sqrt{1 - e^2}\frac{\cos f}{1 - e\cos E}dE
+\end {eqnarray}
+Dividing by $\cos f$ and substituting back, we obtain
+\begin {eqnarray}
+  I_3 &=& \frac{f}{\sqrt{a\mu(1 - e^2)}}.
+\end {eqnarray}
+For $I_4$, substituting $(\ref{eq:hjacobi_p2})$, $(\ref{eq:hjacobi_p3})$
+\begin {eqnarray}
+  I_4
+  &=&
+  \int\left(\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}\right)^{-1/2}
+  =
+  \frac{1}{m\sqrt{a\mu(1 - e^2)}}
+  \int\left(1 - \frac{\cos^2I}{\cos^2\theta}\right)^{-1/2}d\theta
+\end {eqnarray}
+Multiplying with $\alpha_3$ leads
+\begin {eqnarray}
+  \alpha_3I_4
+  &=&
+  \int\frac{\cos\theta d\theta}{\sqrt{\cos^2\theta - \cos^2 I}}
+\end {eqnarray}
+\begin {figure}[h]
+  \begin {center}
+    \begin{tikzpicture}
+      \draw[thick] (0,0) -- (0.1, -1.5);
+      \draw[thick] (0,0) -- (1, 0);
+      \draw[thick, ->] (1.5,0) -- (4, 0);
+      \draw[thick, ->] (0,0) -- (0, 2.1);
+      \draw[thick, ->] (0,0) -- (-2, -2);
+      \draw (0.3, 2) node[below] {$z$};
+      \draw (3.85, 0) node[below] {$y$};
+      \draw (-1.6, -1.65) node[below] {$x$};
+      \draw[thick, ->] (-0.4, -0.4) arc(260:280:1.25cm);
+      \draw (-0.25, -0.4) node[below] {$\Omega$};
+      \draw[thick] (-1.3, -1.3) arc(265:291:10cm);
+      \draw[thick] (0.075, -1.3) arc(300:332:7cm);
+      \draw[thick] (3, -0.85) arc(0:19:7cm);      
+      \draw[thick] (0.75, -1.25) arc(0:30:0.7cm);
+      \draw (1, -0.65) node[below] {$I$};
+      \draw (1, -1.3) node[below] {$\phi$};
+      \draw (1.4, 0.7) node[below,rotate=50] {$\eta=\omega + f$};
+      \draw (3.1, 0.8) node[below] {$\theta$};
+      \draw[thick] (2.75, -0.83) arc(1.5:4:7cm);
+      \draw[thick] (2.72, -0.52) arc(286:288.4:7cm);      
+    \end {tikzpicture}
+    \caption{\label{fig:jacobi_angles}The relationship between the spherical polar coordinates and the Keplerian elements.}
+  \end {center}
+\end {figure}
+From Figure \ref{fig:jacobi_angles}, we obtain
+\begin {eqnarray}
+  \frac{\sin\theta}{\sin I} = \frac{\sin\eta}{\sin\pi/2}
+\end {eqnarray}
+which leads to
+\begin {eqnarray}
+  \cos^2\theta &=& 1 - \sin^2I\sin^2\eta
+  \\
+  \cos\theta d\theta &=& \sin i\cos\eta d\eta.
+\end {eqnarray}
+\begin {eqnarray}
+  \alpha_3 I_4
+  =
+  \int\frac{\sin I\cos\eta d\eta}{\sqrt{1 - \sin^2I\sin^2\eta - \cos^2 I}}
+  =
+  \int\frac{\sin I\cos\eta d\eta}{\sqrt{\sin^2I\cos^2\eta}}
+  =
+  \int d\eta = \eta.
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  q_3' &=& \alpha_3 I_4 - \frac{\alpha_3}{m}I_3
+  =
+  \eta - \frac{m\sqrt{a\mu(1 -e^2)}}{m}\frac{f}{\sqrt{a\mu(1 - e^2)}}
+  =
+  \eta - f = \omega.
+\end {eqnarray}
+We now have the new canonical coordinates and momentums
+\begin {eqnarray}
+  q_1' &=& -\tau,
+  \\
+  q_2' &=& \Omega,
+  \\
+  q_3' &=& \omega,
+  \\
+  p_1' &=& mh,
+  \\
+  p_2' &=& m\sqrt{a\mu(1-e^2)}\cos I,
+  \\
+  p_3' &=& m\sqrt{a\mu(1-e^2)},
+\end {eqnarray}
+as well as the new Hamiltonian
+\begin {eqnarray}
+  H' = 0.
+\end {eqnarray}
+
+\subsubsection{Delaunay Elements}
+
+\section{Spherical Harmonics}
+\subsection{Spheroid Potential}
+The gravitational potential of an arbitrary distribution of mass can be expanded in terms of
+spherical harmonics
+\begin {eqnarray}
+  V(\vc r)
+  &=&
+  -G\int\frac{\rho(\vc r')}{|\vc r - \vc r'|}\:d^3\vc r^3
+  \\
+  &=&
+  -\frac{G}{r}\left(
+  1 - \sum_{n=1}^{\infty}\left(\frac{R}{r}\right)^n J_nP_n(\cos\theta)
+  -\sum_{n=1}^\infty\sum_{m=1}^{\infty}
+  \left(\frac{R}{r}\right)^n
+  P_n^m(\cos\theta)
+  \left(c_{nm}\cos m\phi + s_{nm}\sin n\phi\right)
+  \right)\nonumber
+\end {eqnarray}
+where $\theta$ is the polar angle, $G$ is the gravitational constant, and $R$ is an arbitrary scaling
+factor. The Zonal and Tesseral harmonics can be written
+\begin {eqnarray}
+  J_n &=& -\frac{1}{MR^n}\int P_n(\cos\theta')r'^n\rho(\vc r')\:d^3\vc r',
+  \\
+  c_{nm} &=& - 2\frac{(n-m)!}{(n+m)!}\frac{1}{MR^n}
+  \int P_n^m(\cos\theta')\cos m\phi' r'^n\rho(\vc r')d^3\vc r'
+  \\
+  s_{nm} &=& - 2\frac{(n-m)!}{(n+m)!}\frac{1}{MR^n}
+  \int P_n^m(\cos\theta')\sin m\phi'r'^n\rho(\vc r')d^3\vc r,
+\end {eqnarray}
+where $P_n$ is the Legendre polynomial of degree $n$ and $P_{n}^m$ is the Associated Legendre
+Polynomial of degree $n$ and order $m$.
+If the body is axially symmetric w.r.t. $z$ axis, the tesseral harmonics $c_{nm}$ and $s_{nm}$
+disappear. If the body is symmetric w.r.t. the equatorial $z=0$ plane $P_n(-x) = (-1)^nP_n(x)$
+and $J_n$ will disappear for odd-valued $n$.
+
+Since the body of interest is a spheroid, the tesseral harmonics disappear, and we have an
+expansion in terms of only zonal harmonics
+\begin {eqnarray}
+  \label{eq:zonal_expansion}
+  V(r, \theta) &=&
+  -\frac{\mu}{r}\left(
+  1 - \sum_{n=2}^\infty\left(\frac{R}{r}\right)^nJ_nP_n(\cos\theta)
+  \right).
+\end {eqnarray}
+For SGP4, the zonal harmonics are obtained from WGS72[TODO] with the values
+\begin {eqnarray}
+  J_2 &=& 1082.616\cdot 10^{-6}\nonumber\\
+  J_3 &=& -2.53881\cdot 10^{-6}\nonumber\\
+  J_4 &=& -1.65597\cdot 10^{-6}\nonumber.
+\end {eqnarray} 
+The first four Legendre polynomials can be written
+\begin {eqnarray}
+  \label{eq:legendre1}
+  P_1(\cos\theta) &=& \cos\theta \\
+  \label{eq:legendre2}
+  P_2(\cos\theta) &=& \frac{1}{2}\left(3\cos^2\theta - 1\right) \\
+  \label{eq:legendre3}
+  P_3(\cos\theta) &=& \frac{1}{2}\left(5\cos^3\theta - 3\cos\theta\right) \\
+  \label{eq:legendre4}
+  P_4(\cos\theta) &=& \frac{1}{8}\left(35\cos^4\theta - 30\cos^2\theta + 3\right) \\
+  \label{eq:legendre5}
+  P_5(\cos\theta) &=& \frac{1}{8}\left(63\cos^5\theta - 70\cos^3\theta + 15\cos\theta\right)
+\end {eqnarray}
+Substituting $(\ref{eq:legendre2})-(\ref{eq:legendre4})$ back to $(\ref{eq:zonal_expansion})$,
+we obtain the potential
+\begin {eqnarray}
+  V(r, \theta) &=& -\frac{\mu}{r} \\\nonumber
+  &+& \frac{\mu J_2R^2}{2r^3}\left(3\cos^2\theta - 1\right)\\\nonumber
+  &+& \frac{\mu J_3R^3}{2r^4}\left(5\cos^3\theta - 3\cos\theta\right) \\\nonumber
+  &+& \frac{\mu J_4R^4}{8r^5}\left(35\cos^4\theta - 30\cos^2\theta + 3\right) \\\nonumber
+  &+& \frac{\mu J_5R^5}{8r^6}\left(63\cos^5\theta - 70\cos^3\theta + 15\cos\theta\right) \\\nonumber
+\end {eqnarray}
+We use $R=a_E$ to denote the equatorial radius of Earth and define
+\begin {eqnarray}
+  k_2 = \frac{J_2a_E^2}{2}, \quad
+  k_4 = -\frac{3J_4a_E^4}{8}, \quad
+  A_{3,0} = -J_3a_E^3, \quad
+  A_{5,0} = -J_5a_E^5.
+\end {eqnarray}
+Thereafter, using $\beta$ to denote the geocentric latitude, we obtain $\cos\theta = \sin\beta$ and
+\begin {eqnarray}
+  \label{eq:brouwer_potential}
+  V(r, \theta) &=& - \frac{\mu}{r} \\\nonumber
+  &-& \frac{\mu k_2}{r^3} \left(1 - 3\sin^2\beta\right) \\\nonumber
+  &-& \frac{\mu k_4}{r^5} \left(1 - 10\sin^2\beta + \frac{35}{3}\sin^4\beta\right) \\\nonumber
+  &-& \frac{\mu A_{3,0}}{r^4}\left(-\frac{3}{2}\sin\beta + \frac{5}{2}\sin^3\beta\right) \\\nonumber
+  &-& \frac{\mu A_{5,0}}{r^5}\left(\frac{15}{8}\sin\beta - \frac{35}{4}\sin^3\beta + \frac{63}{8}\sin^5\beta\right).
+\end {eqnarray}
+Note that Brouwer calls the gravitational potential the force function and uses different sign \cite{brouwer}. That is, $U = -V$. 
+\subsection{Disturbing Function}
+The first term in $(\ref{eq:brouwer_potential})$ corresponds to the unperturbed potential of a two-body
+problem, where the Keplerian elements are constants. The additional terms constitute a perturbing potential that
+leads to perturbations in the Keplerian elements. That is, instead of the Hamiltonian $(\ref{eq:TODO})$, we
+have
+\begin {eqnarray}
+  F &=& \frac{\mu}{2L^2} + R,
+\end {eqnarray}  
+where $R = R_2 + R_3 + R_4 + R_5$ is the \textbf{disturbing function} and $R_k$ denote the part of $R$
+corresponding to $k$:th degree in $(\ref{eq:brouwer_potential})$. In this section, we will derive $R$
+in terms of Delaunay variables.
+
+In perifocal frame, where the non-disturbed orbit is on the $z=0$ plane and positive x axis corresponds to
+to the rising node, we can write the position vector as
+\begin {eqnarray}
+  r
+  \begin {bmatrix}
+    \cos(g + f), & \sin (g + f), & 0
+  \end {bmatrix}^T.
+\end {eqnarray}
+The position vector in an equatorial inertial frame with x axis corresponding to the rising node can be obtained
+via application of an anti-clockwise rotation w.r.t. x coordinate
+\begin {eqnarray}
+  \begin {bmatrix}
+    1 & 0 & 0 \\
+    0 & \cos I & -\sin I \\
+    0 & \sin I & \cos I
+  \end {bmatrix}
+  \begin {bmatrix}
+    \cos(g + f) \\
+    \sin(g + f) \\
+    0
+  \end {bmatrix}
+  =
+  \begin {bmatrix}
+    \cos(g+f) \\
+    \cos I\sin(g+f) \\
+    \sin I\sin(g+f)
+  \end {bmatrix}
+\end {eqnarray}
+The z-coordinate can be related to the geocentric latitude $\beta$ in $(\ref{eq:brouwer_potential})$ with the equation
+\begin {eqnarray}
+  \sin\beta = \sin I \sin (g+f).
+\end {eqnarray}
+Then, by using the relations
+\begin {eqnarray}
+  \nonumber
+  \sin^2(g+f) &=& (1 - \cos(2g + 2f))/2, \\
+  \nonumber
+  \sin (g+f)\cos (2g + 2f) &=& \frac{1}{2}\sin(3g + 3f) - \frac{1}{2}\sin(g + f), \\
+  \nonumber
+  \cos 2\theta &=& 2\cos^2\theta - 1, \\
+  \nonumber
+  \sin (g+f)\cos (4g + 4f) &=& \frac{1}{2}\sin(5g + 5f) - \frac{1}{2}\sin(3g + 3f), 
+\end {eqnarray}
+we obtain
+\begin {eqnarray}
+  \sin^2\beta &=& \frac{1}{2}\sin^2 I\left(1 - \cos(2g + 2f)\right),
+  \\\nonumber
+  \sin^3\beta &=& \sin^3I\left(\frac{3}{4}\sin(g + f) - \frac{1}{4}\sin(3g + 3f)\right),
+  \\\nonumber
+  \sin^4\beta &=& \frac{1}{4}\sin^4 I\left(
+  1 - 2\cos(2g + 2f) + \cos^2(2g + 2f)
+  \right)
+  \\\nonumber
+  &=& \frac{1}{8}\sin^4I\left(
+  3 - 4\cos(2g + 2f) + \cos(4g + 4f)
+  \right)
+  \\\nonumber
+  \sin^5\beta &=& \frac{1}{16}\left[
+    6\sin(g + f)  -4\sin(3g + 3f) + 4\sin(g + f) + \sin(5g + 5f) - \sin(3g + 3f)
+    \right]
+  \\\nonumber
+  &=&
+  \sin^5I\left[
+    \frac{5}{8}\sin(g + f) - \frac{5}{16}\sin(3g + 3f) + \frac{1}{16}\sin(5g + 5f)
+    \right].
+\end {eqnarray}
+\subsubsection{The $J_2$ Harmonic}
+We can expand
+\begin {eqnarray}
+  1 - 3\sin^2\beta
+  &=&
+  1 - \frac{3}{2}\sin^2 I \left(1 - \cos(2g + 2f)\right) \\
+  &=&
+  1 - \frac{3}{2}\left(1 - \cos(2g + 2f)\right) + \frac{3}{2}\cos^2I\left(1 - \cos(2g + 2f)\right)\\
+  &=&
+  \left(-\frac{1}{2} + \frac{3}{2}\cos^2I\right) + \left(\frac{3}{2} - \frac{3}{2}\cos^2 I\right)\cos(2g + 2f)
+\end {eqnarray}
+to obtain the disturbing function $R_2$ corresponding to the $J_2$ harmonic
+\begin {eqnarray}
+  R_2 &:=& \frac{\mu k_2}{r^3}\left(1 - 3\sin^2\beta\right)
+  \\\nonumber
+  &=& \frac{\mu k_2}{a^3}\left[
+    \left(-\frac{1}{2} + \frac{3}{2}\cos^2I\right)\frac{a^3}{r^3}
+    + \left(\frac{3}{2} - \frac{3}{2}\cos^2 I\right)\cos(2g + 2f)\frac{a^3}{r^3}
+    \right]
+  \\\nonumber
+  &=& \frac{\mu k_2}{a^3}\left[
+    \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G^2}\right)\frac{a^3}{r^3}
+    + \left(\frac{3}{2} - \frac{3}{2}\frac{H^2}{G^2}\right)\cos(2g + 2f)\frac{a^3}{r^3}
+    \right].
+\end {eqnarray}
+
+\subsubsection{The $J_4$ Harmonic}
+We can expand
+\begin {eqnarray}
+  &\:&
+  1 - 10\sin^2\beta + \frac{35}{3}\sin^4\beta\\\nonumber
+  &=&
+  1 - 5 \sin^2 I\left(1 - \cos(2g + 2f)\right)
+  + \frac{35}{24}\sin^4I\left(3 - 4\cos(2g + 2f) + \cos(4g + 4f)\right) \\\nonumber
+  &=&
+  \left[1 - 5 (1 - \cos^2 I)+ \frac{35}{8}(1 - \cos^2I)^2\right]
+  +
+  \left[5(1 - \cos^2I) - \frac{35}{6}(1 - \cos^2I)^2\right]\cos(2g + 2f) \\\nonumber
+  &+& \frac{35}{24}(1 - \cos^2I)^2\cos(4g + 4f) \\\nonumber
+  &=&
+  \left(
+  \frac{3}{8} - \frac{15}{4}\cos^2 I + \frac{35}{8}\cos^4I
+  \right)
+  +
+  \left(
+  -\frac{5}{6} + \frac{20}{3}\cos^2I - \frac{35}{6}\cos^4 I
+  \right)\cos(2g + 2f)
+  \\\nonumber
+  &+&
+  \left(
+  \frac{35}{24} - \frac{35}{12}\cos^2I + \frac{35}{24}\cos^4 I
+  \right)\cos(4g +4f).
+\end {eqnarray}
+to obtain the disturbing function $R_4$ corresponding to the $J_4$ harmonic
+\begin {eqnarray}
+  R_4 &:=&
+  \frac{\mu k_4}{r^5}\left[
+  \left(
+  \frac{3}{8} - \frac{15}{4}\cos^2 I + \frac{35}{8}\cos^4I
+  \right)\right.\\
+  &+&\quad\quad\:\,
+  \left(
+  -\frac{5}{6} + \frac{20}{3}\cos^2I - \frac{35}{6}\cos^4 I
+  \right)\cos(2g + 2f)
+  \nonumber\\\nonumber
+  &+&\quad\quad\:\,
+  \left.
+  \left(
+  \frac{35}{24} - \frac{35}{12}\cos^2I + \frac{35}{24}\cos^4 I
+  \right)\cos(4g +4f)\right]
+  \\\nonumber &=&
+  \frac{\mu^6 k_4}{L^{10}}\left[
+  \left(
+  \frac{3}{8} - \frac{15}{4}\frac{H^2}{G^2} + \frac{35}{8}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\right.\\
+  &+&\quad\quad\:\,
+  \left(
+  -\frac{5}{6} + \frac{20}{3}\frac{H^2}{G^2} - \frac{35}{6}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\cos(2g + 2f)
+  \nonumber\\\nonumber
+  &+&\quad\quad\:\,
+  \left.
+  \left(
+  \frac{35}{24} - \frac{35}{12}\frac{H^2}{G^2} + \frac{35}{24}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\cos(4g +4f)\right].
+\end {eqnarray}
+
+\subsubsection{The $J_3$ Harmonic}
+We can expand
+\begin {eqnarray}
+  -\frac{3}{2}\sin\beta + \frac{5}{2}\sin^3\beta
+  &=&
+  -\frac{3}{2}\sin I\sin(g + f) + \frac{5}{2}\sin^3I\left(
+  \frac{3}{4}\sin(g + f) - \frac{1}{4}\sin(3g + 3f)
+  \right)
+  \\\nonumber
+  &=&
+  \left(
+  -\frac{3}{2}\sin I + \frac{15}{8}\sin^3I
+  \right)\sin(g + f)
+  - \frac{5}{8}\sin^3I\sin(3g + 3f).
+\end {eqnarray}
+to obtain the disturbing function $R_3$ corresponding to the $J_3$ harmonic
+\begin {eqnarray}
+  R_3 &:=& \frac{\mu A_{3,0}}{r^4}\left[
+  \left(
+  -\frac{3}{2}\sin I + \frac{15}{8}\sin^3I
+  \right)\sin(g + f)
+  - \frac{5}{8}\sin^3I\sin(3g + 3f)    
+  \right]
+  \\\nonumber
+  &=& \frac{\mu A_{3,0}}{r^4}\sin I\left[
+  \left(
+  -\frac{3}{2} + \frac{15}{8}\frac{H^2}{G^2}
+  \right)\sin(g + f)
+  - \frac{5}{8}\frac{H^2}{G^2}\sin(3g + 3f)    
+  \right].
+\end {eqnarray}
+\subsubsection{The $J_5$ Harmonic}
+We can expand
+\begin {eqnarray}
+  \frac{15}{8}\sin\beta &=& \sin I\left[\frac{15}{8}\sin(g + f)\right] \\\nonumber
+  -\frac{35}{4}\sin^3\beta &=& \sin^3 I\left[
+    -\frac{105}{16}\sin(g + f)
+    +
+    \frac{35}{16}\sin(3g + 3f)
+    \right] \\\nonumber
+  \frac{63}{8}\sin^5\beta &=& \sin^5I\left[
+    \frac{315}{64}\sin(g + f) - \frac{315}{128}\sin(3g + 3f) + \frac{63}{128}\sin(5g + 5f)
+    \right]
+\end {eqnarray}
+to obtain the disturbing function $R_5$ corresponding to the $J_5$ harmonic
+\begin {eqnarray}
+  R_5 &:=& \frac{\mu A_{5,0}}{r^6}\left[
+    \left(\frac{15}{8}\sin I - \frac{105}{16}\sin^3I + \frac{315}{64}\sin^5I\right) \sin(g + f)\right.
+    \\\nonumber
+    &+&
+    \quad\quad\quad\quad\quad\quad\quad\quad\left(\frac{35}{15}\sin^3I - \frac{315}{128}\sin^5I\right)\sin(3g + 3f)
+    \\\nonumber
+    &+&\left.
+    \hspace{5.4cm}
+    \left(\frac{63}{128}\sin^5I\right)\sin(5g + 5f)
+    \right]
+\end {eqnarray}
+
+\subsection{Hamiltonian Formulation}
+
+
+\section{Solution of the Problem}
+\subsection{Von Zeipel Method and Canonical Transformations}
+\subsection{Explicit Solution for $J_2$ Harmonic}
+\subsubsection{Short-Period Terms}
+\subsubsection{Long-Period Terms}
+\subsubsection{Secular Terms}
+\subsection{Elements and Orbit State Vectors}
+
+\section{SGP4 Solution}
+\subsection{Approximation}
+\subsection{Coordinate Systems and Frames}
+\subsubsection{Mean-of-Date (MoD)}
+\subsubsection{True-of-Date (ToD)}
+\subsubsection{True-Equator, Mean-Equinox (TEME)}
+\subsubsection{Pseudo Earth-Fixed (PEF)}
+\subsection{Atmospheric Drag}
+\subsection{Two-Line Elements}
+\subsection{Kozai Mean Elements}
+
+\begin {thebibliography}{1}
+\end {thebibliography}
+
+\end {document}

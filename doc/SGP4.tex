@@ -717,7 +717,236 @@ Thus, we have the Hamiltonian formulation in terms of Delaunay variables
   \end {array}
   }
 \end {eqnarray}
+\subsection{Useful Relations}
+In this section, we derive several relations used by Brouwer in \cite{brouwer} involving the
+Delaunay variables and Keplerian orbits. 
 
+We assume that the following equations for true anomaly are known
+\begin {eqnarray}
+  \label{eq:cosf}
+  \cos f &=& \frac{\cos E - e}{1 - e\cos E},
+  \\
+  \label{eq:sinf}
+  \sin f &=& \sqrt{1 - e^2}\frac{\sin E}{1 - e\cos E}.
+\end {eqnarray}
+
+
+\subsubsection{$\partial E/\partial e$}
+Consider Kepler's equation
+\begin {eqnarray}
+  M = E - e\sin E
+\end {eqnarray}
+as an equation relating the pairs $(e', M)$ and $(e, E)$. Then, partial derivative of $M$ w.r.t.
+$e'$ must disappear. That is,
+\begin {eqnarray}
+  \pdiff{M}{e'}
+  &=&
+  \pdiff{M}{e}\pdiff{e}{e'} + \pdiff{M}{E}\pdiff{E}{e'}
+  \\\nonumber
+  &=&
+  \pdiff{}{e}(E - e\sin E) + \pdiff{E}{e'}\pdiff{}{E}(E - e\sin E)
+  \\\nonumber
+  &=&
+  -\sin E + \pdiff{E}{e'}(1 - e\cos E)
+  \\\nonumber
+  &=& 0.
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \label{eq:dEde}
+  \pdiff{E}{e} = \frac{\sin E}{1 - e\cos E}.
+\end {eqnarray}
+
+\subsubsection{$\partial/\partial e (a/r)$}
+We wish to show that
+\begin {eqnarray}
+  \pdiff{}{e}\frac{a}{r} = \frac{a^2}{r^2} \cos f
+\end {eqnarray}
+To derive this, we can simply compute
+\begin {eqnarray}
+  \pdiff{}{e'}\frac{a}{r} &=& \pdiff{}{e}\frac{a}{r} + \frac{\sin E}{1 - e\cos E}\pdiff{}{E}\frac{a}{r}
+  \\\nonumber
+  &=&
+  \frac{\cos E}{(1 - e\cos E)^2}
+  + \frac{\sin E}{1 - e\cos E}\frac{-e\sin E}{(1 - e\cos E)^2}
+  \\\nonumber
+  &=&
+  \frac{cos E - e\cos^2 E - e\sin^2 E}{(1 - e\cos E)^3}
+  \\\nonumber
+  &=& \frac{a^2}{r^2}\frac{\cos E - e}{1 - e\cos E}
+  \\\nonumber
+  &=& \frac{a^2}{r^2}\cos f
+\end {eqnarray}
+where we have used
+\begin {eqnarray}
+  \pdiff{}{e}\frac{a}{r} &=& \pdiff{}{e}\frac{1}{1 - e\cos E}
+  \,\,= \frac{\cos E}{(1 - e\cos E)^2}
+  \\
+  \pdiff{}{E}\frac{a}{r} &=& \pdiff{}{E}\frac{1}{1 - e\cos E}
+  = \frac{-e\sin E}{(1 - e\cos E)^2}
+\end {eqnarray}
+
+\subsubsection{$\partial l/\partial f$}
+We wish to show that
+\begin {eqnarray}
+  \pdiff{M}{f} = \frac{L}{G} \frac{r^2}{a^2}.
+\end {eqnarray}
+From $(\ref{eq:cosf})$, we obtain
+\begin {eqnarray}
+  f = \textrm{acos}\left(\frac{\cos E - e}{1 - e\cos E}\right)
+\end {eqnarray}
+Now by application of the chain rule
+\begin {eqnarray}
+  \diff{f}{E}
+  &=&
+  \left(\diff{}{E}\frac{\cos E - e}{1 - e\cos E}\right)
+  \left[
+    -
+    \left(
+    1 - \left[\frac{\cos E - e}{1 - e\cos E}\right]^2
+    \right)^{-1/2}
+    \right].
+\end {eqnarray}
+For the first part
+\begin {eqnarray}
+  \diff{}{E}\frac{\cos E - e}{1 - e\cos E}
+  &=&
+  \frac{(1 - e\cos E)(-\sin E) - (\cos E - e)(e\sin E)}{(1 - e\cos E)^2}
+  \\\nonumber
+  &=&
+  \frac{-\sin E + e\sin E\cos E - e\sin E\cos E + e^2\sin E}{(1 - e\cos E)^2}
+  \\\nonumber
+  &=&
+  -\frac{\sin E(1-e^2)}{(1 - e\cos E)^2}.
+\end {eqnarray}
+For the latter part
+\begin {eqnarray}
+  \label{eq:acosder}
+  \frac{-1}{\sqrt{1 - [\cdot]^2}}
+  &=&
+  -\left(
+    \frac{1 - 2e\cos E + e^2\cos^2 E - \cos^2 E + 2e\cos E - e^2}{(1 - e\cos E)^2}
+    \right)^{-1/2}
+  \\\nonumber
+  &=&
+  -\left(
+    \frac{(1 - e^2)(1 - \cos^2E)}{(1 - e\cos E)^2}
+    \right)^{-1/2}
+  \\\nonumber
+  &=&
+  -\frac{1 - e\cos E}{\sin E\sqrt{1 - e^2}}
+  .
+\end {eqnarray}
+Thus
+\begin {eqnarray}
+  \diff{f}{E}
+  &=&
+  \frac{\sin E (1 - e^2)}{(1 - e\cos E)^2}
+  \cdot
+  \frac{1 - e\cos E}{\sin E\sqrt{1 - e^2}}
+  =
+  \frac{\sqrt{1 - e^2}}{1 - e\cos E}.
+\end {eqnarray}
+Also from the Kepler equation $M = - E - e\sin E$, we obtain
+\begin {eqnarray}
+  \diff{M}{E} = 1 - e\cos E.
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \label{eq:dMdf}
+  \diff{M}{f}&=& \diff{M}{E}\diff{E}{f} = \frac{(1 - e\cos E)^2}{\sqrt{1 - e^2}}
+\end {eqnarray}
+From $(\ref{eq:cosf})$, we can also solve
+\begin {eqnarray}
+  \cos E = \frac{\cos f + e}{1 + e\cos f}
+\end {eqnarray}
+and
+\begin {eqnarray}
+  1 - e\cos E = \frac{1 + e \cos f - e\cos f - e^2}{1 + e\cos f} = \frac{1 - e^2}{1 + e\cos f}.
+\end {eqnarray}
+Substituting this back to $(\ref{eq:dMdf})$, yields
+\begin {eqnarray}
+  \diff{M}{f}
+  &=&
+  \frac{(1 - e^2)^{3/2}}{(1 + e\cos f)^2}
+\end {eqnarray}
+For elliptic orbits,
+\begin {eqnarray}
+  \frac{r^2}{a^2} &=& \left(\frac{1- e^2}{1 + e\cos f}\right)^2
+  =
+  \sqrt{1 - e^2}\diff{M}{f}
+\end {eqnarray}
+Thus, we finally have
+\begin {eqnarray}
+  \diff{M}{f} &=& \frac{1}{\sqrt{1 - e^2}}\frac{r^2}{a^2} = \frac{L}{G}\frac{r^2}{a^2}. \quad \square
+\end {eqnarray}
+
+\subsubsection{$\partial f/\partial e$}
+We wish to show that
+\begin {eqnarray}
+  \pdiff{f}{e} = \left(\frac{a}{r} + \frac{L^2}{G^2}\right)\sin f
+\end {eqnarray}
+From $(\ref{eq:cosf})$, we obtain
+\begin {eqnarray}
+  \diff{f}{e} &=&
+  \left(
+  \diff{}{e}
+  \frac{\cos E - e}{1 - e\cos E}
+  \right)
+  \frac{-1}{\sqrt{1 - (\cdot)^2}}
+\end {eqnarray}
+The latter part is obtained from $(\ref{eq:acosder})$.
+For the first part
+\begin {eqnarray}
+  \nonumber
+  \diff{}{e}\frac{\cos E - e}{1 - e\cos E}
+  &=&
+  \frac{(1 - e\cos E)(\partial E/\partial e(-\sin E) - 1) + (e - \cos E)(\partial E/\partial e\: e\sin E - \cos E)}
+       {(1 - e\cos E)^2}
+  \\
+  &=&
+  \frac{\cos^2E - 1}{(1 - e\cos E)^2}
+  +
+  \pdiff{E}{e}
+  \frac{\sin E(e^2-1)}{(1 - e\cos E)^2}
+  \\\nonumber
+  &=&
+  \frac{\cos^2E - 1}{(1 - e\cos E)^2}
+  +
+  \frac{\sin^2 E(e^2-1)}{(1 - e\cos E)^3},  
+\end {eqnarray}
+where we have used $(\ref{eq:dEde})$.
+Using $(\ref{eq:acosder})$, we can now compute
+\begin {eqnarray}
+  \diff{f}{e}
+  &=&
+  -\frac{1 - e\cos E}{\sin E\sqrt{1 - e^2}}
+  \left(
+  \frac{\cos^2E - 1}{(1 - e\cos E)^2}
+  +
+  \frac{\sin^2 E(e^2-1)}{(1 - e\cos E)^3},
+  \right)
+  \\\nonumber
+  &=&
+  \frac{1}{\sqrt{1 - e^2}}
+  \frac{\sin E}{1 - e\cos E}
+  +
+  \sqrt{1 - e^2}\frac{\sin E}{(1 - e\cos E)^2}
+  \\\nonumber
+  &=&
+  \frac{\sin f}{1 - e^2}
+  +
+  \frac{\sin f}{1 - e\cos E}
+  \\\nonumber
+  &=&
+  \left(\frac{1}{1 - e^2} + \frac{a}{r}\right)\sin f
+  \\\nonumber
+  &=&
+  \left(
+  \frac{L^2}{G^2} + \frac{a}{r}
+  \right)\sin f,\quad\square
+\end {eqnarray}
+where we have used $(\ref{eq:sinf})$.
 \section{Spherical Harmonics}
 \subsection{Spheroid Potential}
 The gravitational potential of an arbitrary distribution of mass can be expanded in terms of

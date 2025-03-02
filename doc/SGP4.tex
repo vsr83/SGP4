@@ -23,6 +23,7 @@
 \usepackage{stix}
 \usepackage{lipsum}
 \usepackage{tikz}
+\usepackage{hyperref}
 
 \newcommand{\BackgroundPic}{
 %  \put(0,0){
@@ -120,12 +121,17 @@
 \section{Two-Body Problem}
 To discuss the solution presented in \cite{brouwer}, we need to formulate the two-body problem in terms
 of Delaunay elements. Thus, this section is dedicated to canonical transformations and the Hamilton-Jacobi
-Equation. Starting from a Hamiltonian formulation in spherical polar coordinates, we will first use
-Hamilton-Jacobi equations to derive canonical coordinates corresponding to zero Hamiltonian and then
-use a canonical transformation to derive a Hamiltonian formulation in terms of Delaunay Elements.
+Equation. Starting from a Hamiltonian formulation in spherical polar coordinates
+(section \ref{sec:hamiltonian_sph}), we will first use
+Hamilton-Jacobi equations to derive canonical coordinates corresponding to zero Hamiltonian
+(section \ref{sec:hamilton_jacobi})
+and then
+use a canonical transformation to derive a Hamiltonian formulation in terms of Delaunay Elements
+(section \ref{sec:delaunay}).
 
-The discussion in this section is roughly based on sections 6 and 7 of \cite{karkkainen}. 
-\subsection{Hamiltonian Formulation}
+The discussion in this section is roughly based on sections 6 and 7 of \cite{karttunen}. 
+\subsection{Hamiltonian Formulation in Spherical Coordinates}
+\label{sec:hamiltonian_sph}
 Consider the problem of a point particle with mass $m$ in a gravitational potential $V$, where the kinetic
 and potential energy can be expressed via the equations
 \begin {eqnarray}
@@ -146,7 +152,8 @@ Thus, the Hamiltonian (using the notation in \cite{brouwer}) can be expressed
 In this section, we will use canonical transformations and the Hamilton-Jacobi equation to derive
 the Hamiltonian in terms of canonical coordinates and momentums called Delaunay Elements.
 
-\subsubsection{Canonical Transformations}
+\subsection{Canonical Transformations}
+\label{sec:canonical_transformations}
 Suppose $F^*$ is a Hamiltonian obtained from an another Hamiltonian $F$ with a \textbf{generating 
 function} (called \textbf{determining function} in \cite{brouwer}) $S$. Then,
 \begin {eqnarray}
@@ -158,7 +165,8 @@ $S= S(\vc q, \vc p')$, which satisfy
   p_i = \pdiff{S}{q_i},\quad
   q_i' = \pdiff{S}{p_i'}
 \end {eqnarray}
-\subsubsection{Hamilton-Jacobi Equation}
+\subsection{Hamilton-Jacobi Equation}
+\label{sec:hamilton_jacobi}
 With Hamilton-Jacobi equation, we can derive canonical coordinates, which do not appear
 explicitly in the transformed Hamiltonian. Then, each canonical coordinate and momentum
 is independent of time. That is, for $F=F(r,\theta,\phi,p_r,p_\theta,p_\phi)$ we wish find
@@ -186,6 +194,7 @@ Substitution to $(\ref{eq:hamiltonian_spherical})$, yields
   =
   0.
 \end {eqnarray}
+\subsubsection{Separation of Variables}
 We attempt to solve $(\ref{eq:hjacobi2})$ via separation of variables
 \begin {eqnarray}
   S(r, \theta, \phi, t) = S_r(r) + S_\theta(\theta) + S_\phi(\phi) + S_t(t).
@@ -287,6 +296,7 @@ The generating function satisfying $(\ref{eq:hjacobi1})$ can be thus written
   \frac{\alpha_1}{r^2}
   }
 \end {eqnarray}
+\subsubsection{Canonical Momentums}
 We will select the canonical momentums
 \begin {eqnarray}
   \label{eq:hjacobi_p1}
@@ -376,6 +386,7 @@ To derive $(\ref{eq:hjacobi_p3})$, we can compute
 where $\dot f=\dot\theta^2 + \cos^2\theta\dot\phi^2$ is the time derivative of the natural anomaly
 since the sum is the square of total scalar angular speed.
 
+\subsubsection{Canonical Coordinates}
 The new canonical coordinates can be computed
 \begin {eqnarray}
   q_1' = \pdiff{S}{\alpha_1}
@@ -596,6 +607,7 @@ Thus,
   =
   \eta - f = \omega.
 \end {eqnarray}
+\subsubsection{Hamiltonian Formulation with Zero Hamiltonian}
 We now have the new canonical coordinates and momentums
 \begin {eqnarray}
   q_1' &=& -\tau,
@@ -612,10 +624,99 @@ We now have the new canonical coordinates and momentums
 \end {eqnarray}
 as well as the new Hamiltonian
 \begin {eqnarray}
-  H' = 0.
+  \label{eq:zero_hamiltonian}
+  F' = 0.
 \end {eqnarray}
-
-\subsubsection{Delaunay Elements}
+The mass is typically left out leading to variables
+\begin {eqnarray}
+  \label{eq:zero_q1}
+  q_1' &=& -\tau,
+  \\
+  \label{eq:zero_q2}
+  q_2' &=& \Omega,
+  \\
+  \label{eq:zero_q3}
+  q_3' &=& \omega,
+  \\
+  \label{eq:zero_p1}
+  p_1' &=& h,
+  \\
+  \label{eq:zero_p2}
+  p_2' &=& \sqrt{a\mu(1-e^2)}\cos I,
+  \\
+  \label{eq:zero_p3}
+  p_3' &=& \sqrt{a\mu(1-e^2)},
+\end {eqnarray}
+Since none of the variables are present in the Hamiltonian $F'=0$, all of the variables are
+constant.
+\subsection{Delaunay Elements}
+\label{sec:delaunay}
+To obtain the Delaunay Elements used in \cite{brouwer} from $(\ref{eq:zero_hamiltonian})-(\ref{eq:zero_p3})$, we
+seek the following variables
+\begin {eqnarray}
+  h &=& \Omega
+  \\
+  g &=& \omega
+  \\
+  l &=& n(t + q_1)
+  \\
+  H &=& \sqrt{a\mu(1 - e^2)}
+  \\
+  G &=& \sqrt{a\mu(1 - e^2)}\cos I
+  \\
+  L &=& ?
+\end {eqnarray}
+These are found with the generating function
+\begin {eqnarray}
+  S &=& \left(
+  nL - \frac{3\mu}{2a}
+  \right)
+  (t + q_1') + q_2'H + q_3'G
+  \\\nonumber
+  &=&
+  \left(
+  nL - \frac{3\mu}{2a}
+  \right)
+  (t - \tau) + \Omega H + \omega G
+\end {eqnarray}
+Now
+\begin {eqnarray}
+  p_1 = \pdiff{S}{q_1}
+  = - \pdiff{S}{\tau} = -\frac{3\mu}{2a} + nL = h 
+\end {eqnarray}
+from which by using $h=-\mu/2a$ (for ellipses) and Kepler's third law $n=\sqrt{\mu/a^3}$, we can solve
+\begin {eqnarray}
+  L = \frac{1}{n}\left(
+  h + \frac{3\mu}{2a}
+  \right)
+  =
+  \frac{1}{n}
+  \left(-\frac{\mu}{2a} + \frac{3\mu}{2a}\right)
+  =
+  \frac{\mu}{an}
+  =
+  \sqrt{a\mu}
+\end {eqnarray}
+The new Hamiltonian
+\begin {eqnarray}
+  F = 0 + \pdiff{S}{t} = nL - \frac{3\mu}{2a}
+  =
+  \sqrt{\mu/a^3}\sqrt{a\mu} - \frac{3\mu}{2a}
+  =
+  -\frac{\mu}{2a}
+  =
+  -\frac{\mu^2}{2L^2}.
+\end {eqnarray}
+Thus, we have the Hamiltonian formulation in terms of Delaunay variables
+\begin {eqnarray}
+  \boxed{
+  \begin {array}{lll}
+    l = M,           & L = \sqrt{a\mu},                & \\
+    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)}\cos I, & F = -\dfrac{\mu}{2L^2}\\
+    h = \Omega,      & H =  \sqrt{a\mu(1 - e^2)},      &
+  \end {array}
+  }
+\end {eqnarray}
 
 \section{Spherical Harmonics}
 \subsection{Spheroid Potential}
@@ -952,6 +1053,24 @@ to obtain the disturbing function $R_5$ corresponding to the $J_5$ harmonic
 \subsection{Kozai Mean Elements}
 
 \begin {thebibliography}{1}
+\bibitem{brouwer}
+  Brouwer - Solution of the Problem of Artificial Satellite Theory Without Drag, The Astronomical Journal, 64, No. 1274, 378-396, 1959 (\url{https://adsabs.harvard.edu/full/1959AJ.....64..378B}).
+\bibitem{karttunen}
+  Karttunen - Johdatus Taivaanmekaniikkaan, Ursan julkaisuja 1982, Tähtitieteellinen yhdistys Ursa, 2001.
+\bibitem{vallado_code}
+Vallado - Companion code for Fundamentals of Astrodynamics and Applications, 2013.
+\bibitem{hoots}
+Hoots, Roehrich - Spacetrack Report No. 3, 1980 (\url{https://celestrak.org/NORAD/documentation/spacetrk.pdf}).
+\bibitem{lane}
+Lane, Hoots - General Perturbation Theories Derived from the 1965 Lane Drag Theory, Project Space Track, 1979 (\url{https://apps.dtic.mil/sti/citations/ADA081264}).
+\bibitem{hoots}
+Hoots, Schumacher, Glover - History of Analytical Orbit Modeling in the U.S. Space Surveillance System, Journal of Guidance, Control and Dynamics, Vol 27, No.2. 174-185 March-April 2004 (\url{https://arc.aiaa.org/doi/10.2514/1.9161}).
+\bibitem{hujsak}
+Hujsak - A Restricted Four Body Solution for Resonating Satellites without Drag, Project Space Track, 1979 (\url{https://apps.dtic.mil/sti/citations/ADA081263}).
+\bibitem{revisit}
+Vallado, Crawford, Hujsak - Revisiting Spacetrack Report No.3,  American Institute of Aeronautics and Astronautics, AIAA 2006-6753, 2006 (\url{https://celestrak.org/publications/AIAA/2006-6753/AIAA-2006-6753.pdf}).
+  
+  
 \end {thebibliography}
 
 \end {document}

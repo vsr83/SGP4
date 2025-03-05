@@ -23,6 +23,7 @@
 \usepackage{stix}
 \usepackage{lipsum}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 \usepackage{hyperref}
 
 \newcommand{\BackgroundPic}{
@@ -54,7 +55,7 @@
 \addtolength{\columnsep}{0.5cm}
 
  
-\lhead {Notes on the SGP4/SDP4 Solution \\Ville Räisänen}
+\lhead {Notes on the SGP4/SDP4 Solution \\Ville Räisänen (\url{https://www.github.com/vsr83})}
 \rhead {\today}
 \thispagestyle{fancy}
 
@@ -118,6 +119,8 @@
 
 \begin {document}
 
+\tableofcontents
+
 \section{Two-Body Problem}
 To discuss the solution presented in \cite{brouwer}, we need to formulate the two-body problem in terms
 of Delaunay elements. Thus, this section is dedicated to canonical transformations and the Hamilton-Jacobi
@@ -135,7 +138,7 @@ The discussion in this section is roughly based on sections 6 and 7 of \cite{kar
 Consider the problem of a point particle with mass $m$ in a gravitational potential $V$, where the kinetic
 and potential energy can be expressed via the equations
 \begin {eqnarray}
-  T &=&= \frac{m}{2}(\dot r^2 + r^2\dot\theta^2 + r^2\cos^2\theta \dot\phi) \\
+  T &=& \frac{m}{2}(\dot r^2 + r^2\dot\theta^2 + r^2\cos^2\theta \dot\phi) \\
   V &=& -\frac{\mu m}{r}
 \end {eqnarray}
 in terms of spherical polar coordinates $(r, \theta, \phi)$ and canonical momentums
@@ -162,6 +165,7 @@ function} (called \textbf{determining function} in \cite{brouwer}) $S$. Then,
 In this document, we only use generating functions of the type
 $S= S(\vc q, \vc p')$, which satisfy
 \begin {eqnarray}
+  \label{eq:canonical_2}
   p_i = \pdiff{S}{q_i},\quad
   q_i' = \pdiff{S}{p_i'}
 \end {eqnarray}
@@ -775,7 +779,7 @@ To derive this, we can simply compute
   \\\nonumber
   &=& \frac{a^2}{r^2}\frac{\cos E - e}{1 - e\cos E}
   \\\nonumber
-  &=& \frac{a^2}{r^2}\cos f
+  &=& \frac{a^2}{r^2}\cos f\quad\square
 \end {eqnarray}
 where we have used
 \begin {eqnarray}
@@ -789,7 +793,8 @@ where we have used
 \subsubsection{$\partial l/\partial f$}
 We wish to show that
 \begin {eqnarray}
-  \pdiff{M}{f} = \frac{L}{G} \frac{r^2}{a^2}.
+  \label{eq:dldf}
+  \pdiff{l}{f} = \frac{L}{G} \frac{r^2}{a^2}.
 \end {eqnarray}
 From $(\ref{eq:cosf})$, we obtain
 \begin {eqnarray}
@@ -946,8 +951,94 @@ Using $(\ref{eq:acosder})$, we can now compute
   \frac{L^2}{G^2} + \frac{a}{r}
   \right)\sin f,\quad\square
 \end {eqnarray}
-where we have used $(\ref{eq:sinf})$.
-\section{Spherical Harmonics}
+\subsubsection{$\int\sigma_1 dl$}
+We wish to show that
+\begin {eqnarray}
+  \label{eq:int_sigma1}
+  \int\sigma_1\: dl &=& \frac{L^3}{G^3}(f - l + e\sin f)\quad :\quad \sigma_1 = \frac{a^3}{r^3} - \frac{L^3}{G^3}
+\end {eqnarray}
+First note that using $(\ref{eq:dldf})$,
+\begin {eqnarray}
+  \pdiff{}{l}(f + e\sin f) = \pdiff{f}{l} + e\pdiff{f}{l}\cos f = (1 + e\cos f)\pdiff{f}{l}
+  = (1 + e\cos f)\frac{a^2}{r^2}\sqrt{1 - e^2}.
+\end {eqnarray}
+Substituting
+\begin {eqnarray}
+  \frac{a}{r} = \frac{1 + e\cos f}{1 - e^2},
+\end {eqnarray}
+we obtain
+\begin {eqnarray}
+  \pdiff{}{l} (f + e\sin f) = \frac{a^3}{r^3}(1-e^2)^{3/2}
+\end {eqnarray}
+and
+\begin {eqnarray}
+  \pdiff{}{l}\frac{f  + e\sin f}{(1 - e^2)^{3/2}}
+  =
+  \frac{a^3}{r^3}
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \int\left(\frac{a^3}{r^3} - \frac{L^3}{G^3}\right)\:dl
+  =
+  \frac{f + e\sin f}{(1 - e^2)^{3/2}} - \frac{L^3}{G^3}l
+  =
+  \frac{L^3}{G^3}(f - l + e\sin f).\quad\square
+\end {eqnarray}
+
+\subsubsection{$\int\sigma_2 dl$}
+We wish to show that
+\begin {eqnarray}
+  \label{eq:int_sigma2}
+  \int\sigma_2\:dl &=& \frac{1}{(1 - e^2)^{3/2}}\left[
+    \frac{1}{2}\sin(2g + 2f)
+    +
+    \frac{e}{2}\sin(2g + f)
+    +
+    \frac{e}{6}\sin(2g + 3f)
+    \right]
+\end {eqnarray}
+where
+\begin {eqnarray}
+  \sigma_2 = \frac{a^3}{r^3}\cos(2g + 2f).
+\end {eqnarray}
+Differentiating the square brackets part of $(\ref{eq:int_sigma2})$, we obtain
+\begin {eqnarray}
+  \pdiff{}{dl}[\cdot]
+  &=&
+  \pdiff{f}{l}\left[
+    \cos(2g + 2f) + \frac{e}{2}\cos(2g + f) + \frac{e}{2}\cos(2g + 3f)
+    \right]
+\end {eqnarray}
+With trigonometric summation formulas, we can compute
+\begin {eqnarray}
+  \cos(2g + f) &=& \cos(2g + 2f - f) = \cos(2g + 2f)\cos f + \sin(2g + 2f)\sin f
+  \\
+  \cos(2g + 3f) &=& \cos(2g + 2f + f) = \cos(2g + 2f)\cos f - \sin(2g + 2f)\sin f.
+\end {eqnarray}
+Thus,
+\begin {eqnarray}
+  \pdiff{}{dl}[\cdot]
+  &=&
+  \pdiff{f}{l}
+  \left[
+    \cos(2g + 2f) + e \cos(2g + 2f)\cos f
+    \right]
+  \\\nonumber
+  &=&
+  \pdiff{f}{l}
+  \left[
+    \cos(2g + 2f)(1+ e \cos f)
+    \right]
+  \\\nonumber
+  &=&
+  \sqrt{1 - e^2}\frac{a^2}{r^2}(1 + e\cos f)\cos(2g + 2f).
+  \\\nonumber
+  &=&
+  \frac{a^3}{r^3}(1 - e^2)^{3/2}\cos(2g + 2f).\quad\square
+\end {eqnarray}
+
+\newpage
+\section{Spherical Harmonics and the Perturbed Problem}
 \subsection{Spheroid Potential}
 The gravitational potential of an arbitrary distribution of mass can be expanded in terms of
 spherical harmonics
@@ -1134,7 +1225,7 @@ to obtain the disturbing function $R_2$ corresponding to the $J_2$ harmonic
     + \left(\frac{3}{2} - \frac{3}{2}\cos^2 I\right)\cos(2g + 2f)\frac{a^3}{r^3}
     \right]
   \\\nonumber
-  &=& \frac{\mu k_2}{a^3}\left[
+  &=& \frac{\mu^4 k_2}{L^6}\left[
     \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G^2}\right)\frac{a^3}{r^3}
     + \left(\frac{3}{2} - \frac{3}{2}\frac{H^2}{G^2}\right)\cos(2g + 2f)\frac{a^3}{r^3}
     \right].
@@ -1261,15 +1352,254 @@ to obtain the disturbing function $R_5$ corresponding to the $J_5$ harmonic
 
 \subsection{Hamiltonian Formulation}
 
-
+\newpage
 \section{Solution of the Problem}
 \subsection{Von Zeipel Method and Canonical Transformations}
+The basic idea of the Von Zeipel method is to perform successive canonical transformations
+so that each transformation gets rid of the dependence of the Hamiltonian on a single
+canonical coordinate. This is continued until the final Hamiltonian is independent of all
+canonical coordinates. The canonical momentums in the resulting Hamiltonian are then
+constants and canonical coordinates are linear functions of time.
+To obtain a solution to the original problem, the solution is then transformed back to the
+original coordinates, where each canonical transformation introduces periodics (trigonometric
+functions) w.r.t variable reintroduced to the Hamiltonian.
+
+\begin {figure}[h]
+  \begin {center}
+    \begin{tikzpicture}
+      \draw[-{Latex[length=3mm]}] (-1, 2.5) arc(130:230:0.75);
+      \draw[-{Latex[length=3mm]}] (-1, 1) arc(130:230:0.75);
+      \draw[-{Latex[length=3mm]}] (2, 1.3) arc(-50:50:0.75);
+      \draw[-{Latex[length=3mm]}] (2, -0.2) arc(-50:50:0.75);
+      \draw (0.5, 3) node[below] {$F(l, g, L, G, H)$};
+      \draw (0.5, 1.5) node[below] {$F^*(g', L', G', H)$};
+      \draw (0.5, 0) node[below] {$F^*(L', G'', H)$};
+      
+      \draw (-0.8, 0.75) node[below] {$S^*$};
+      \draw (-0.8, 2.25) node[below] {$S$};
+      \draw (4.3, 0) node[below] {secular terms (t)};
+      \draw (4.3, 0.75) node[below] {short-period terms (l)};
+      \draw (4.3, 2.25) node[below] {long-period terms (g)};
+    \end {tikzpicture}
+    \caption{\label{fig:vonzeipel}Canonical transformations in \cite{brouwer}.}
+  \end {center}
+\end {figure}
+
+\subsubsection{Decomposition of the Hamiltonian}
+In order to derive each transformation, the Hamiltonians as well as the generating functions
+are expanded as Taylor series in powers of some parameter (e.g. $k_2$ in \cite{brouwer})
+and terms of equal order are equated.
+For example, for the problem involving only the $J_2$ harmonic, we can divide F as follows:
+\begin {eqnarray}
+  F = F_0 + F_1=  \underbrace{-\frac{\mu^4}{2L^2}}_{F_0}
+  +
+  \underbrace{
+  \frac{\mu^4 k_2}{L^6}\left[
+    \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G^2}\right)\frac{a^3}{r^3}
+    + \left(\frac{3}{2} - \frac{3}{2}\frac{H^2}{G^2}\right)\cos(2g + 2f)\frac{a^3}{r^3}
+    \right]}_{F_1}
+\end {eqnarray}
+The first-order term $F_1$ is further decomposed into periodic and secular parts. Define
+\begin {eqnarray}
+  A:= -\frac{1}{2} + \frac{3}{2}\frac{H^2}{G^2},
+  \quad
+  B:= \frac{3}{2} - \frac{3}{2}\frac{H^2}{G^2},
+  \quad
+  \sigma_1:= \frac{a^3}{r^3} - \frac{L^3}{G^3},
+  \quad
+  \sigma_2:= \frac{a^3}{r^3}\cos(2g + 2f).
+\end {eqnarray}
+Then,
+\begin {eqnarray}
+  F_1 &=& \frac{k_2\mu^4}{L^6}\left(
+  A\frac{a^3}{r^3} + B\frac{a^3}{r^3}\cos(2g + 2f)
+  \right)
+  \\\nonumber
+  &=&
+  \frac{k_2\mu^4}{L^6}\left[
+    A\left(\sigma_1+ \frac{L^3}{G^3}\right)  + B\sigma_2
+    \right]
+  \\\nonumber
+  &=&
+  \underbrace{\frac{k_2\mu^4}{L^6}(A\sigma_1 + B\sigma 2)}_{F_{1p}}
+  +
+  \underbrace{\frac{k_2\mu^4}{G^3L^3}A}_{F_{1s}} =: F_{1p} + F_{1s}.
+\end {eqnarray}
+The dependence on $l$ is limited to the terms $\sigma_1$ and $\sigma_2$. 
+
+\subsubsection{First Transformation of the Hamiltonian}
+We want the new Hamiltonian $F^*$ to be equal so we require
+\begin {eqnarray}
+  F &=& F_0 + F_1 = F_0^* + F_1^* + F_2^* = F^*,
+  \\
+  S &=& S_0 + S_1 + S_2,
+\end {eqnarray}
+where the Hamiltonians and the generating function have the following dependence on
+the variables
+\begin {eqnarray}
+  F &=& F(L, G, H, l, g, -)\\
+  F^* &=& F^*(L', G', H, -, g', -)\\
+  S &=& S(L', G', H', l, g, h)
+\end {eqnarray}
+In $F_1$, the dependence on mean anomaly $l$ is via true anomaly $f$. To derive
+the relationship between the original and transformed variables, we require
+\begin {eqnarray}
+  F_0(L) + F_1(L, G, H, l, g, -) &=& F_0^* + F_1^*(L', G', H, -, g', -)
+  \\\nonumber
+  &+& \quad\quad\: F_2^*(L', G', H, -, g', -).
+\end {eqnarray}
+From $(\ref{eq:canonical_2})$, we can substitute
+\begin {eqnarray}
+  L &=& \pdiff{S}{l} = \pdiff{}{l}(S_0 + S_1 + S_2) = L' + \pdiff{S_1}{l} + \pdiff{S_2}{l},\\
+  G &=& \pdiff{S}{g} = \pdiff{}{g}(S_0 + S_1 + S_2) = G' + \pdiff{S_1}{g} + \pdiff{S_2}{g},\\
+  H &=& \pdiff{S}{h} = \pdiff{}{h}(S_0 + S_1 + S_2) = H  + \pdiff{S_1}{h} + \pdiff{S_2}{h},\\
+  l' &=& \pdiff{S}{L'} = \pdiff{}{L'}(S_0 + S_1 + S_2) = l + \pdiff{S_1}{L'} + \pdiff{S_2}{L'},\\
+  g' &=& \pdiff{S}{G'} = \pdiff{}{G'}(S_0 + S_1 + S_2) = g + \pdiff{S_1}{G'} + \pdiff{S_2}{G'},\\
+  h' &=& \pdiff{S}{H'} = \pdiff{}{H}(S_0 + S_1 + S_2) = h  + \pdiff{S_1}{H'} + \pdiff{S_2}{H'}.
+\end {eqnarray}
+to obtain
+\begin {eqnarray}
+  \label{eq:vonzeipel_hamiltonianorders}
+  &\:&
+  F_0\left(L' + \pdiff{S_1}{l} + \pdiff{S_2}{l}\right)
+  +
+  F_1\left(
+  L' + \pdiff{S_1}{l} + \pdiff{S_2}{l},
+  G' + \pdiff{S_1}{g} + \pdiff{S_2}{g},
+  H',
+  l, g, -
+  \right)
+  \\\nonumber
+  &=&
+  F_0^*\left(L'\right)
+  +
+  F_1^*\left(L', G', H', -, g + \pdiff{S_1}{G'} + \pdiff{S_2}{G'}, -\right)
+  +
+  F_2^*\left(L', G', H', -, g + \pdiff{S_1}{G'} + \pdiff{S_2}{G'}, -\right)
+\end {eqnarray}
+We expand each as a Taylor series w.r.t. $(L', G', H', l, g, h)$ to obtain
+\begin {eqnarray}
+  F_0\left(\cdot\right)
+  &\approx&
+  F_0(L') + \pdiff{F_0}{L'}\pdiff{S_1}{l}
+  +
+  \pdiff{F_0}{L'}\pdiff{S_2}{l}
+  +
+  \frac{1}{2}\pdiff{^2F_0}{L'^2}
+  \left(
+  \pdiff{S_1}{l}
+  +
+  \pdiff{S_2}{l}
+  \right)^2,
+  \\
+  F_1\left(\cdot\right)
+  &\approx&
+  F_1(L', G', H', l, g, -) + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{L'}\pdiff{S_2}{l}
+  + \frac{1}{2}\pdiff{^2F_1}{L'^2}
+  \left(
+  \pdiff{S_1}{l}
+  +
+  \pdiff{S_2}{l}
+  \right)^2 \\\nonumber
+  &+&
+  \hspace{4cm}\pdiff{F_1}{G'}\pdiff{S_1}{g} + \pdiff{F_1}{G'}\pdiff{S_2}{g}
+  + \frac{1}{2}\pdiff{^2F_1}{G'^2}
+  \left(
+  \pdiff{S_1}{g}
+  +
+  \pdiff{S_2}{g}
+  \right)^2,
+  \\
+  F_1^*\left(\cdot\right)
+  &\approx&
+  F_1^*(L', G', H', -, g, -)
+  + \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
+  + \pdiff{F_1^*}{g}\pdiff{S_2}{G'}
+  + \frac{1}{2}\pdiff{^2F_1^*}{g^2}\left(\pdiff{S_1}{G'} + \pdiff{S_2}{G'}\right)^2,
+  \\
+  F_2^*\left(\cdot\right)
+  &\approx&
+  F_2^*(L', G', H', -, g, -)
+  + \pdiff{F_2^*}{g}\pdiff{S_1}{G'}
+  + \pdiff{F_2^*}{g}\pdiff{S_2}{G'}
+  + \frac{1}{2}\pdiff{^2F_2^*}{g^2}\left(\pdiff{S_1}{G'} + \pdiff{S_2}{G'}\right)^2.
+\end {eqnarray}
+Here $S_k$ and $F_k$ will have order $k$ w.r.t. $k_2$. We will only retain the terms that are at most of
+order 2. Thus, 
+\begin {eqnarray}
+  F_0(\cdot) &\approx& F_0 + \pdiff{F_0}{L'}\pdiff{S_1}{l} + \pdiff{F_0}{L'}\pdiff{S_2}{l}
+  + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
+  \\
+  F_1(\cdot) &\approx& F_1 + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g}
+  \\
+  F_1^*(\cdot) &\approx& F_1^* + \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
+  \\
+  F_2^*(\cdot) &\approx& F_2^*
+\end {eqnarray}
+and $(\ref{eq:vonzeipel_hamiltonianorders})$ can written
+\begin {eqnarray}
+  F_0(L') &+& \pdiff{F_0}{L'}\pdiff{S_1}{l} + \pdiff{F_0}{L'}\pdiff{S_2}{l}
+  + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
+  \\\nonumber
+  &+&
+  F_1(L', G', H', l, g) + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g}
+  \\\nonumber
+  &=&
+  F_0^*(L') + F_1^*(L', G', H', g)
+  + \pdiff{F_1^*}{g}\pdiff{S_1}{G'} + F_2^*(L', G', H', g).
+\end {eqnarray}
+Equating terms of each order of $k_2$, we get the equations
+\begin {eqnarray}
+  F_0 &=& F_0^*
+  \\
+  \label{eq:f1_term}
+  \pdiff{F_0}{L'}\pdiff{S_1}{l} + F_1 &=& F_1^*
+  \\
+  \pdiff{F_0}{L'}\pdiff{S_2}{l} + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
+  + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g} &=& F_2^* + \pdiff{F_1^*}{g}\pdiff{S_1}{G'}.
+\end {eqnarray}
+for orders 0, 1 and 2, respectively.
+Thus
+\begin {eqnarray}
+  F_0^*(L') &=& \frac{\mu}{2L'^2}
+\end {eqnarray}
+The first-degree part $(\ref{eq:f1_term})$ can be written as
+\begin {eqnarray}
+  -\frac{\mu^2}{L'^3}\pdiff{S_1}{l} + \frac{\mu^4k_2}{L'^3G'^3}A
+  + \frac{\mu^4k_2}{L'^6}(A\sigma_1 + B\sigma_2) = F_1^*,
+\end {eqnarray}
+and is satisfied if
+\begin {eqnarray}
+  F_1^* &=& \frac{\mu^4k_2}{L'^3G'^3}A, \\
+  \pdiff{S_1}{l} &=& \frac{\mu^2k_2}{L'^3}(A\sigma_1 + B\sigma_2)
+\end {eqnarray}
+hold. Thus, we can solve
+\begin {eqnarray}
+  S_1 &=& \frac{\mu^2k_2}{L'^3}\int(A\sigma_1 + B\sigma_2)\:dl
+  \\\nonumber
+  &=&\frac{\mu^2k_2}{L'^3}\left(A \int\sigma_1\:dl + B\int\sigma_2\:dl\right)
+  \\\nonumber
+  &=& \frac{\mu^2k_2}{G'^3}\left[
+    A(f - l + e\sin f)
+    +
+    B\left(
+    \frac{1}{2}\sin(2g + 2f) + \frac{e}{2}\sin(2g + f) + \frac{e}{6}\sin(2g + 3f)
+    \right)
+    \right].
+\end {eqnarray}
+Now the remaining part of the new Hamiltonian can be computed
+\begin {eqnarray}
+  F_2^* &=& \pdiff{F_0}{L'}\pdiff{S_2}{l} + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
+  + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g} - \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
+\end {eqnarray}
+\subsubsection{Second Transformation of the Hamiltonian}
 \subsection{Explicit Solution for $J_2$ Harmonic}
 \subsubsection{Short-Period Terms}
 \subsubsection{Long-Period Terms}
 \subsubsection{Secular Terms}
 \subsection{Elements and Orbit State Vectors}
 
+\newpage
 \section{SGP4 Solution}
 \subsection{Approximation}
 \subsection{Coordinate Systems and Frames}

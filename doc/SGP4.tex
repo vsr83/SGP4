@@ -1373,17 +1373,29 @@ functions) w.r.t variable reintroduced to the Hamiltonian.
       \draw[-{Latex[length=3mm]}] (2, -0.2) arc(-50:50:0.75);
       \draw (0.5, 3) node[below] {$F(l, g, L, G, H)$};
       \draw (0.5, 1.5) node[below] {$F^*(g', L', G', H)$};
-      \draw (0.5, 0) node[below] {$F^*(L', G'', H)$};
+      \draw (0.5, 0) node[below] {$F^{**}(L', G'', H)$};
       
       \draw (-0.8, 0.75) node[below] {$S^*$};
       \draw (-0.8, 2.25) node[below] {$S$};
       \draw (4.3, 0) node[below] {secular terms (t)};
-      \draw (4.3, 0.75) node[below] {short-period terms (l)};
-      \draw (4.3, 2.25) node[below] {long-period terms (g)};
+      \draw (4.3, 2.25) node[below] {short-period terms (l)};
+      \draw (4.3, 0.75) node[below] {long-period terms (g)};
     \end {tikzpicture}
     \caption{\label{fig:vonzeipel}Canonical transformations in \cite{brouwer}.}
   \end {center}
 \end {figure}
+Three systems will be used as shown in Figure \ref{fig:vonzeipel}:
+\begin {itemize}
+\item The first system uses undotted variables $(L, G, H, l, g, h)$ and the Hamiltonian
+  $F = F(L, G, H, l, g)$ explicitly dependent on both $l$ and $g$.
+\item The second system uses singly dotted variables $(L', G', H', l', g', h')$ and the Hamiltonian
+  $F^* = F^*(L', G', H', g')$ explicitly dependent on $g$.
+\item The third system uses double dotted variables $(L'', G'', H'', l'', g'', h'')$ and the
+  Hamiltonian $F^{**} = F^{**}(L'', G'', H'')$ independent from all angle variables.
+\end {itemize}
+The generating functions $S = S(L', G', H', l, g, h)$ and
+$S^*=S^*(L'', G'', H'', l', g', h')$ are used for transformations $F\mapsto F^*$ and $F^*\mapsto F^{**}$,
+respectively.
 
 \subsubsection{Decomposition of the Hamiltonian}
 In order to derive each transformation, the Hamiltonians as well as the generating functions
@@ -1440,6 +1452,10 @@ the variables
   F &=& F(L, G, H, l, g, -)\\
   F^* &=& F^*(L', G', H, -, g', -)\\
   S &=& S(L', G', H', l, g, h)
+\end {eqnarray}
+We select
+\begin {eqnarray}
+  S_0 = L'l + G'g + H'h.
 \end {eqnarray}
 In $F_1$, the dependence on mean anomaly $l$ is via true anomaly $f$. To derive
 the relationship between the original and transformed variables, we require
@@ -1587,11 +1603,18 @@ hold. Thus, we can solve
     \right)
     \right].
 \end {eqnarray}
+
+\subsubsection{Short-Period Terms}
+The term $S_2$ is ignored so we finally have the complete generating function $S = S_0 + S_1$
+and the short-period terms (periodic w.r.t. $l$) can be derived.
+
 Now the remaining part of the new Hamiltonian can be computed
 \begin {eqnarray}
   F_2^* &=& \pdiff{F_0}{L'}\pdiff{S_2}{l} + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
   + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g} - \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
 \end {eqnarray}
+
+
 \subsubsection{Second Transformation of the Hamiltonian}
 \subsection{Explicit Solution for $J_2$ Harmonic}
 \subsubsection{Short-Period Terms}

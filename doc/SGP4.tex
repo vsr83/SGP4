@@ -1037,6 +1037,42 @@ Thus,
   \frac{a^3}{r^3}(1 - e^2)^{3/2}\cos(2g + 2f).\quad\square
 \end {eqnarray}
 
+\subsubsection{$(1 + e\cos f)\partial f / \partial e$}
+We wish to show that
+\begin {eqnarray}
+  \label{eq:dfde2}
+  (1 + e\cos f)\pdiff{f}{e} &=& \left(
+  \frac{a^2}{r^2}\frac{G^2}{L^2} + \frac{a}{r}
+  \right)\sin f
+\end {eqnarray}
+To start, note that
+\begin {eqnarray}
+  (1 + e\cos f)\pdiff{f}{e} &=& (1 + e\cos f)
+  \left(
+  \frac{a}{r} + \frac{L^2}{G^2}
+  \right)\sin f
+  \\\nonumber
+  &=&
+  \left(
+  \frac{a}{r} + \frac{L^2}{G^2}
+  \right)\sin f
+  +
+  \left(
+  \frac{a}{r} + \frac{L^2}{G^2}
+  \right)e\sin f\cos f
+  \\\nonumber
+  &=&
+  \frac{a}{r}(1 + e\cos f)\sin f + \frac{L^2}{G^2}(1 + e\cos f)\sin f
+  \\\nonumber
+  &=&
+  \left[\frac{a}{r} + \frac{a}{r}e\cos f + \frac{L^2}{G^2}(1 + e\cos f)\right]\sin f
+  \\\nonumber
+  &=&
+  \left[\frac{a}{r} + \frac{a}{r}\left(1 + e\cos f\right)\right]\sin f
+  \\\nonumber
+  &=&
+  \left[\frac{a}{r} + \frac{a^2}{r^2}(1 - e^2)\right]\sin f. \quad\square
+\end {eqnarray}
 \newpage
 \section{Spherical Harmonics and the Perturbed Problem}
 \subsection{Spheroid Potential}
@@ -1606,7 +1642,52 @@ hold. Thus, we can solve
 
 \subsubsection{Short-Period Terms}
 The term $S_2$ is ignored so we finally have the complete generating function $S = S_0 + S_1$
-and the short-period terms (periodic w.r.t. $l$) can be derived.
+and the short-period terms (periodic w.r.t. $l$) can be derived. From $(\ref{eq:dfde2})$, we obtain
+\begin {eqnarray}
+  \pdiff{}{e}(f - l + e\sin f) = (1 + e\cos f)\pdiff{f}{e} + \sin f
+  =
+  \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f.
+\end {eqnarray}
+With this, we can compute
+\begin {eqnarray}
+  \pdiff{S_1}{e}
+  &=&
+  \frac{\mu^2k_2}{G'^3}\left[
+    \left(-\frac{1}{2} + \frac{3}{2}\frac{H'^2}{G'^2}\right)
+    +
+    \left(\frac{3}{2} - \frac{3}{2}\frac{H'^2}{G'^2}\right)
+    \right].
+\end {eqnarray}
+
+Note that
+\begin {eqnarray}
+  e^2 = 1 - \frac{G^2}{L^2}
+\end {eqnarray}
+and suppose that $\psi$ is a variable of $e$. Then
+\begin {eqnarray}
+  \pdiff{\psi}{L}
+  &=&
+  \diff{\psi}{e}\pdiff{e}{L}
+  =
+  \:\:\:\diff{\psi}{e}\frac{1}{2}\frac{2G^2}{eL^3}
+  =
+  \:\:\:\frac{G^2}{L^3}\frac{1}{e}\diff{\psi}{e},
+  \\
+  \pdiff{\psi}{G}
+  &=&
+  \diff{\psi}{e}\pdiff{e}{G}
+  =
+  -\diff{\psi}{e}\frac{1}{2}
+  \frac{2G}{eL^2}
+  =
+  -\frac{G}{L^2}\frac{1}{e}\diff{\psi}{e}.
+\end {eqnarray}
+Applying this to $S_1$, we obtain
+\begin {eqnarray}
+  \pdiff{S_1}{L'} &=& \:\:\:\frac{G'^2}{L'^3}\frac{1}{e}\pdiff{S_1}{e},
+  \\
+  \pdiff{S_1}{G'} &=& -\frac{G'}{L'^2}\frac{1}{e}\pdiff{S_1}{e}.
+\end {eqnarray}
 
 Now the remaining part of the new Hamiltonian can be computed
 \begin {eqnarray}

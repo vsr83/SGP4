@@ -141,7 +141,7 @@ and potential energy can be expressed via the equations
   T &=& \frac{m}{2}(\dot r^2 + r^2\dot\theta^2 + r^2\cos^2\theta \dot\phi) \\
   V &=& -\frac{\mu m}{r}
 \end {eqnarray}
-in terms of spherical polar coordinates $(r, \theta, \phi)$ and canonical momentums
+in terms of spherical polar coordinates $(r, \theta, \phi)$ and canonical momenta
 \begin {eqnarray}
   p_r &=& \pdiff{T}{\dot r} = m\dot r\\
   p_\theta &=& \pdiff{T}{\dot\theta} = mr^2\dot\theta\\
@@ -153,7 +153,7 @@ Thus, the Hamiltonian (using the notation in \cite{brouwer}) can be expressed
   F(r, \theta, \phi, p_r, p_\theta, p_\phi) &=& T + V = \frac{1}{2m}\left(p_r^2 + \frac{p_\theta^2}{r^2} + \frac{p_\phi^2}{r^2\cos^2\theta}\right) - \frac{\mu m}{r}.
 \end {eqnarray}
 In this section, we will use canonical transformations and the Hamilton-Jacobi equation to derive
-the Hamiltonian in terms of canonical coordinates and momentums called Delaunay Elements.
+the Hamiltonian in terms of canonical coordinates and momenta called Delaunay Elements.
 
 \subsection{Canonical Transformations}
 \label{sec:canonical_transformations}
@@ -300,8 +300,8 @@ The generating function satisfying $(\ref{eq:hjacobi1})$ can be thus written
   \frac{\alpha_1}{r^2}
   }
 \end {eqnarray}
-\subsubsection{Canonical Momentums}
-We will select the canonical momentums
+\subsubsection{Canonical Momenta}
+We will select the canonical momenta
 \begin {eqnarray}
   \label{eq:hjacobi_p1}
   p'_1 &:=& \alpha_1 = mh
@@ -612,7 +612,7 @@ Thus,
   \eta - f = \omega.
 \end {eqnarray}
 \subsubsection{Hamiltonian Formulation with Zero Hamiltonian}
-We now have the new canonical coordinates and momentums
+We now have the new canonical coordinates and momenta
 \begin {eqnarray}
   q_1' &=& -\tau,
   \\
@@ -716,8 +716,8 @@ Thus, we have the Hamiltonian formulation in terms of Delaunay variables
   \boxed{
   \begin {array}{lll}
     l = M,           & L = \sqrt{a\mu},                & \\
-    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)}\cos I, & F = -\dfrac{\mu}{2L^2}\\
-    h = \Omega,      & H =  \sqrt{a\mu(1 - e^2)},      &
+    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)}, & F = -\dfrac{\mu}{2L^2}\\
+    h = \Omega,      & H =  \sqrt{a\mu(1 - e^2)}\cos I,      &
   \end {array}
   }
 \end {eqnarray}
@@ -1011,8 +1011,10 @@ Differentiating the square brackets part of $(\ref{eq:int_sigma2})$, we obtain
 \end {eqnarray}
 With trigonometric summation formulas, we can compute
 \begin {eqnarray}
+  \label{eq:trisumgf1}
   \cos(2g + f) &=& \cos(2g + 2f - f) = \cos(2g + 2f)\cos f + \sin(2g + 2f)\sin f
   \\
+  \label{eq:trisumgf2}
   \cos(2g + 3f) &=& \cos(2g + 2f + f) = \cos(2g + 2f)\cos f - \sin(2g + 2f)\sin f.
 \end {eqnarray}
 Thus,
@@ -1394,7 +1396,7 @@ to obtain the disturbing function $R_5$ corresponding to the $J_5$ harmonic
 The basic idea of the Von Zeipel method is to perform successive canonical transformations
 so that each transformation gets rid of the dependence of the Hamiltonian on a single
 canonical coordinate. This is continued until the final Hamiltonian is independent of all
-canonical coordinates. The canonical momentums in the resulting Hamiltonian are then
+canonical coordinates. The canonical momenta in the resulting Hamiltonian are then
 constants and canonical coordinates are linear functions of time.
 To obtain a solution to the original problem, the solution is then transformed back to the
 original coordinates, where each canonical transformation introduces periodics (trigonometric
@@ -1502,11 +1504,17 @@ the relationship between the original and transformed variables, we require
 \end {eqnarray}
 From $(\ref{eq:canonical_2})$, we can substitute
 \begin {eqnarray}
+  \label{eq:transformation_L}
   L &=& \pdiff{S}{l} = \pdiff{}{l}(S_0 + S_1 + S_2) = L' + \pdiff{S_1}{l} + \pdiff{S_2}{l},\\
+  \label{eq:transformation_G}
   G &=& \pdiff{S}{g} = \pdiff{}{g}(S_0 + S_1 + S_2) = G' + \pdiff{S_1}{g} + \pdiff{S_2}{g},\\
+  \label{eq:transformation_H}
   H &=& \pdiff{S}{h} = \pdiff{}{h}(S_0 + S_1 + S_2) = H  + \pdiff{S_1}{h} + \pdiff{S_2}{h},\\
+  \label{eq:transformation_l}
   l' &=& \pdiff{S}{L'} = \pdiff{}{L'}(S_0 + S_1 + S_2) = l + \pdiff{S_1}{L'} + \pdiff{S_2}{L'},\\
+  \label{eq:transformation_g}
   g' &=& \pdiff{S}{G'} = \pdiff{}{G'}(S_0 + S_1 + S_2) = g + \pdiff{S_1}{G'} + \pdiff{S_2}{G'},\\
+  \label{eq:transformation_h}
   h' &=& \pdiff{S}{H'} = \pdiff{}{H}(S_0 + S_1 + S_2) = h  + \pdiff{S_1}{H'} + \pdiff{S_2}{H'}.
 \end {eqnarray}
 to obtain
@@ -1623,10 +1631,12 @@ The first-degree part $(\ref{eq:f1_term})$ can be written as
 and is satisfied if
 \begin {eqnarray}
   F_1^* &=& \frac{\mu^4k_2}{L'^3G'^3}A, \\
+  \label{eq:dS_1_dl}
   \pdiff{S_1}{l} &=& \frac{\mu^2k_2}{L'^3}(A\sigma_1 + B\sigma_2)
 \end {eqnarray}
 hold. Thus, we can solve
 \begin {eqnarray}
+  \label{eq:S_1}
   S_1 &=& \frac{\mu^2k_2}{L'^3}\int(A\sigma_1 + B\sigma_2)\:dl
   \\\nonumber
   &=&\frac{\mu^2k_2}{L'^3}\left(A \int\sigma_1\:dl + B\int\sigma_2\:dl\right)
@@ -1642,24 +1652,153 @@ hold. Thus, we can solve
 
 \subsubsection{Short-Period Terms}
 The term $S_2$ is ignored so we finally have the complete generating function $S = S_0 + S_1$
-and the short-period terms (periodic w.r.t. $l$) can be derived. From $(\ref{eq:dfde2})$, we obtain
+and the short-period terms (periodic w.r.t. $l$) can be derived. The canonical
+momenta can be computed with $(\ref{eq:transformation_L})-(\ref{eq:transformation_H})$.
+We will use the constant
 \begin {eqnarray}
+  \gamma_2 &:=& \frac{\mu^2k_2}{L'^4}.
+\end {eqnarray}
+The computation of $L$ is simple using $(\ref{eq:dS_1_dl})$:
+\begin {eqnarray}
+  L &=& L' + \pdiff{S_1}{l}
+  \\\nonumber
+  &=& L'\left[1 + \gamma_2(A\sigma_1 + B\sigma_2)\right]
+  \\\nonumber
+  &=&
+  L'\left\{
+    1
+    +
+    \gamma_2
+    \left[
+      \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G'^2}\right)
+      \left(\frac{a^3}{r^3} - \frac{L'^2}{G'^3}\right)
+      +
+      \left(\frac{3}{2} - \frac{3}{2}\frac{H^2}{G'^2}\right)
+      \frac{a^3}{r^3}\cos(2g + 2f)
+      \right]
+    \right\}.
+\end {eqnarray}
+Computation of $G$ involves only the $B$ part of $(\ref{eq:S_1})$:
+\begin {eqnarray}
+  G &=& G' + \pdiff{S_1}{g}
+  \\\nonumber
+  &=&G'\left\{
+  1 + \gamma_2\frac{L'^4}{G'^4}
+  \left[
+    \cos(2g + 2f) + e\cos(2g + f) + \frac{e}{3}\cos(2g + 3f)
+    \right]
+  \right\}
+\end {eqnarray}
+Since $S_1$ is independent of $h$,
+\begin {eqnarray}
+  H &=& H'.
+\end {eqnarray}
+The computation of the short-term periodics in the canonical coordinates is more
+complex. From $(\ref{eq:dfde2})$, we obtain
+\begin {eqnarray}
+  \label{eq:dS1_de_A}
   \pdiff{}{e}(f - l + e\sin f) = (1 + e\cos f)\pdiff{f}{e} + \sin f
   =
   \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f.
 \end {eqnarray}
-With this, we can compute
+For the $B$ part of $(\ref{eq:S_1})$, using $(\ref{eq:trisumgf1})-(\ref{eq:trisumgf2})$
+and $(\ref{eq:dfde2})$, we obtain
+\begin {eqnarray}
+  \pdiff{}{e}\left(\cdot\right)_B
+  &=&
+  \pdiff{}{e}
+  \left(
+    \frac{1}{2}\sin(2g + 2f) + \frac{e}{2}\sin(2g + f) + \frac{e}{6}\sin(2g + 3f)
+    \right)
+    \\\nonumber
+    &=&
+    \pdiff{f}{e}
+    \left(
+    \cos(2g + 2f) + \frac{e}{2}\cos(2g + 2f) + \frac{e}{2}\cos(2g + 3f)
+    \right)
+    + \frac{1}{2}\sin(2g + f)
+    + \frac{1}{6}\sin(2g + 3f)
+    \\\nonumber
+    &=&
+    \cos(2g + 2f)(1 + e\cos f)\pdiff{f}{e}
+    +
+    \frac{1}{2}\sin(2g + f) + \frac{1}{6}\sin(2g + 3f).
+    \\\nonumber
+    &=&
+    \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r}\right)\cos(2g + 2f)\sin f
+    +
+    \frac{1}{2}\sin(2g + f) + \frac{1}{6}\sin(2g + 3f).
+\end {eqnarray}
+Now application of standard trigonometric formulas yields
+\begin {eqnarray}
+  \cos(2g + 2f)\sin f
+  &=&
+   \sin(2g + 3f) - \sin(2g + 2f)\cos f
+  \\\nonumber
+  &=&
+  -\sin(2g + f) + \sin(2g + 2f)\cos f
+  \\\nonumber
+  &=&
+  \frac{1}{2}\sin(2g + 3f) - \frac{1}{2}\sin(2g + f).
+\end {eqnarray}
+Thus, substituting this back, yields
+\begin {eqnarray}
+  \label{eq:dS1_de_B}
+  \pdiff{}{e}(\cdot)_B
+  &=&
+  \frac{1}{2}
+  \left(
+  \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r}
+  \right)
+  \sin(2g + 3f) + \frac{1}{6}\sin(2g + 3f) 
+  \\\nonumber
+  &-&
+  \frac{1}{2}
+  \left(
+  \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r}
+  \right)
+  \sin(2g + f) + \frac{1}{2}\sin(2g + f).
+  \\\nonumber
+  &=&
+  \frac{1}{2}
+  \left(
+  \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + \frac{1}{3}
+  \right)
+  \sin(2g + 3f)
+  +
+  \frac{1}{2}
+  \left(
+  -\frac{a^2}{r^2}\frac{G'^2}{L'^2} - \frac{a}{r} + 1
+  \right)
+  \sin(2g + f).
+\end {eqnarray}
+With $(\ref{eq:dS1_de_A})$ and $(\ref{eq:dS1_de_B})$, we can compute
 \begin {eqnarray}
   \pdiff{S_1}{e}
   &=&
-  \frac{\mu^2k_2}{G'^3}\left[
-    \left(-\frac{1}{2} + \frac{3}{2}\frac{H'^2}{G'^2}\right)
+  \frac{\mu^2k_2}{G'^3}\left\{
+    %\left(-\frac{1}{2} + \frac{3}{2}\frac{H'^2}{G'^2}\right)
+    A\left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f
+    \right.
+    \\\nonumber
+    &+&
+    \left.
+    %\left(\frac{3}{2} - \frac{3}{2}\frac{H'^2}{G'^2}\right)
+    \frac{B}{2}
+    \left[
+    \left(
+    \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + \frac{1}{3}
+    \right)
+    \sin(2g + 3f)
     +
-    \left(\frac{3}{2} - \frac{3}{2}\frac{H'^2}{G'^2}\right)
-    \right].
+    \left(
+    -\frac{a^2}{r^2}\frac{G'^2}{L'^2} - \frac{a}{r} + 1
+    \right)
+    \sin(2g + f)
+    \right]
+    \right\}.
 \end {eqnarray}
-
-Note that
+To compute the partial derivatives w.r.t. $L'$ and $G'$, we first note that
 \begin {eqnarray}
   e^2 = 1 - \frac{G^2}{L^2}
 \end {eqnarray}
@@ -1673,6 +1812,7 @@ and suppose that $\psi$ is a variable of $e$. Then
   =
   \:\:\:\frac{G^2}{L^3}\frac{1}{e}\diff{\psi}{e},
   \\
+  \label{eq:dpsi_dG}
   \pdiff{\psi}{G}
   &=&
   \diff{\psi}{e}\pdiff{e}{G}
@@ -1684,19 +1824,162 @@ and suppose that $\psi$ is a variable of $e$. Then
 \end {eqnarray}
 Applying this to $S_1$, we obtain
 \begin {eqnarray}
-  \pdiff{S_1}{L'} &=& \:\:\:\frac{G'^2}{L'^3}\frac{1}{e}\pdiff{S_1}{e},
-  \\
-  \pdiff{S_1}{G'} &=& -\frac{G'}{L'^2}\frac{1}{e}\pdiff{S_1}{e}.
+  \pdiff{S_1}{L'} &=& \:\:\:\frac{G'^2}{L'^3}\frac{1}{e}\pdiff{S_1}{e}.
+\end {eqnarray}
+Using $(\ref{eq:transformation_l})-(\ref{eq:transformation_h})$, we can compute the
+short-period terms. The momentum $L'$ does not appear explicitly in $S_1$ so the dependence
+is only via $e$. That is, 
+\begin {eqnarray}
+  l &=& l' - \frac{G'^2}{L'^3}\frac{1}{e}\pdiff{S_1}{e}
+  \\\nonumber
+  &=& l' - \frac{\gamma_2}{e}\frac{L'}{G'}
+  \left\{
+  \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G'^2}\right)
+  \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f
+  \right.
+    \\\nonumber
+    &+&
+    \left.
+    \left(\frac{3}{4} - \frac{3}{4}\frac{H^2}{G'^2}\right)
+    \left[
+    \left(
+    \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + \frac{1}{3}
+    \right)
+    \sin(2g + 3f)
+    +
+    \left(
+    -\frac{a^2}{r^2}\frac{G'^2}{L'^2} - \frac{a}{r} + 1
+    \right)
+    \sin(2g + f)
+      \right]\right\}
+\end {eqnarray}
+Dependence of $S_1$ on $G'$ is via direct appearance in expression $(\ref{eq:S_1})$
+and via dependence $(\ref{eq:dpsi_dG})$ on $e$. That is,
+\begin {eqnarray}
+  g
+  &=&
+  g'
+  -
+  \pdiff{S_1}{G'} -\frac{G'}{L'^2}\frac{1}{e}\pdiff{S_1}{e}.
+\end {eqnarray}
+The direct part can be computed
+\begin {eqnarray}
+  \pdiff{S_1}{G'}
+  &=&
+  \frac{\mu^2k_2}{G'^4}\left[
+  \left(
+  +\frac{3}{2} - \frac{9}{2}\frac{H^2}{G'^2}
+  \right)(\cdot)
+    +
+    \left(
+    -\frac{9}{2}+\frac{9}{2}\frac{H^2}{G'^2}
+    \right)
+    \left(\cdot\right)
+    \right]
+\\
+\nonumber
+&+&
+\frac{\mu^2k_2}{G'^4}\left[
+  \left(\quad\:\:\:\:-\frac{6}{2}\frac{H^2}{G'^2}\right)(\cdot)
+  +
+  \left(
+  \quad\:\:\:+\frac{6}{2}\frac{H^2}{G'^2}
+  \right)(\cdot)
+  \right]
+\\\nonumber
+&=&
+-\gamma_2\frac{L'^4}{G'^4}\left[
+  \left(-\frac{3}{2} + \frac{15}{2}\frac{H^2}{G'^2}\right)(\cdot)
+  +
+  \left(\frac{9}{2} - \frac{15}{2}\frac{H^2}{G'^2}\right)(\cdot)
+\right] 
+\end {eqnarray}
+The indirect part can be computed
+\begin {eqnarray}
+  \pdiff{S_1}{e}\pdiff{e}{G'}
+  &=& - \frac{G'}{L'^2}\frac{1}{e}\pdiff{S_1}{e}
+  \\\nonumber
+  &=& -\frac{G'}{L'^2}\frac{1}{e}\frac{\mu^2k_2}{G'^3}
+  \left\{
+  \left(-\frac{1}{2}
+  + \frac{3}{2}\frac{H^2}{G'^2}\right)
+  \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f\right.
+  \\\nonumber
+  &+&
+  \left.
+  \left(\frac{3}{4} - \frac{3}{4}\frac{H^2}{G'^2}\right)
+  \left[
+    \left(
+    \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + \frac{1}{3}
+    \right)\sin(2g + 3f)
+    +
+    \left(
+    -\frac{a^2}{r^2}\frac{G'^2}{L'^2} - \frac{a}{r} + 1
+    \right)\sin(2g + f)
+    \right]
+  \right\}.
+\end {eqnarray}
+Thus, we obtain the lenghty expression
+\begin {eqnarray}
+  g &=& g' + 
+  \gamma_2\frac{L'^4}{G'^4}\left[
+    \left(-\frac{3}{2} + \frac{15}{2}\frac{H^2}{G'^2}\right)(f - l + e\sin f)
+    \right.
+    \\\nonumber
+  &+&\left.
+    \left(\:\:\:\,\frac{9}{2} - \frac{15}{2}\frac{H^2}{G'^2}\right)
+    \left(
+    \frac{1}{2}\sin(2g + 2f) + \frac{e}{2}\sin(2g + f) + \frac{e}{6}\sin(2g + 3f)
+    \right)\right]
+    \\\nonumber
+    &+&
+    \frac{\gamma_2}{e}\frac{L'^2}{G'^2}\left\{
+  \left(-\frac{1}{2}
+  + \frac{3}{2}\frac{H^2}{G'^2}\right)
+  \left(\frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + 1\right)\sin f\right.
+  \\\nonumber
+  &+&
+  \left.
+  \left(\frac{3}{4} - \frac{3}{4}\frac{H^2}{G'^2}\right)
+  \left[
+    \left(
+    \frac{a^2}{r^2}\frac{G'^2}{L'^2} + \frac{a}{r} + \frac{1}{3}
+    \right)\sin(2g + 3f)
+    +
+    \left(
+    -\frac{a^2}{r^2}\frac{G'^2}{L'^2} - \frac{a}{r} + 1
+    \right)\sin(2g + f)
+    \right]
+    \right\}.
+\end {eqnarray}
+Finally, we can compute
+\begin {eqnarray}
+  h &=& h' - \pdiff{S_1}{H}
+  \\\nonumber
+  &=& h' - \frac{\mu k_2}{G'^2}
+  \left\{
+  3\frac{H}{G'^2}(f - l + e\sin f)
+  -3\frac{H}{G'^2}\left[
+    \frac{1}{2}\sin(2g + 2f) + \frac{e}{2}\sin(2g + f) + \frac{e}{6}\sin(2g + 3f)
+    \right]
+  \right\}
+  \\\nonumber
+  &=&
+  h' - 3\gamma_2\frac{L'^4}{G'^4}\frac{H}{G'}
+  \left[
+    f - l + e\sin f - \frac{1}{2}\sin(2g + 2f) - \frac{e}{2}\sin(2g + 2)
+    - \frac{e}{6}\sin(2g + 3f)
+    \right].
 \end {eqnarray}
 
+
+\subsubsection{Second Transformation of the Hamiltonian}
 Now the remaining part of the new Hamiltonian can be computed
 \begin {eqnarray}
   F_2^* &=& \pdiff{F_0}{L'}\pdiff{S_2}{l} + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
   + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g} - \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
 \end {eqnarray}
 
-
-\subsubsection{Second Transformation of the Hamiltonian}
 \subsection{Explicit Solution for $J_2$ Harmonic}
 \subsubsection{Short-Period Terms}
 \subsubsection{Long-Period Terms}

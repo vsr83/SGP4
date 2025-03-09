@@ -1441,7 +1441,7 @@ are expanded as Taylor series in powers of some parameter (e.g. $k_2$ in \cite{b
 and terms of equal order are equated.
 For example, for the problem involving only the $J_2$ harmonic, we can divide F as follows:
 \begin {eqnarray}
-  F = F_0 + F_1=  \underbrace{-\frac{\mu^4}{2L^2}}_{F_0}
+  F = F_0 + F_1=  \underbrace{\frac{\mu^4}{2L^2}}_{F_0}
   +
   \underbrace{
   \frac{\mu^4 k_2}{L^6}\left[
@@ -1621,6 +1621,7 @@ Equating terms of each order of $k_2$, we get the equations
 for orders 0, 1 and 2, respectively.
 Thus
 \begin {eqnarray}
+  \label{eq:F_0_star}
   F_0^*(L') &=& \frac{\mu}{2L'^2}
 \end {eqnarray}
 The first-degree part $(\ref{eq:f1_term})$ can be written as
@@ -1630,7 +1631,9 @@ The first-degree part $(\ref{eq:f1_term})$ can be written as
 \end {eqnarray}
 and is satisfied if
 \begin {eqnarray}
-  F_1^* &=& \frac{\mu^4k_2}{L'^3G'^3}A, \\
+  \label{eq:F_1_star}
+  F_1^* &=& \frac{\mu^4k_2}{L'^3G'^3}A,
+  \\
   \label{eq:dS_1_dl}
   \pdiff{S_1}{l} &=& \frac{\mu^2k_2}{L'^3}(A\sigma_1 + B\sigma_2)
 \end {eqnarray}
@@ -1972,14 +1975,395 @@ Finally, we can compute
     \right].
 \end {eqnarray}
 
-
-\subsubsection{Second Transformation of the Hamiltonian}
-Now the remaining part of the new Hamiltonian can be computed
+\subsubsection{Second-Order Terms}
+Now the remaining part of the new Hamiltonian can be computed (TODO)
+\small
 \begin {eqnarray}
-  F_2^* &=& \pdiff{F_0}{L'}\pdiff{S_2}{l} + \frac{1}{2}\pdiff{^2F_0}{L'^2}\left(\pdiff{S_1}{l}\right)^2
-  + \pdiff{F_1}{L'}\pdiff{S_1}{l} + \pdiff{F_1}{G'}\pdiff{S_1}{g} - \pdiff{F_1^*}{g}\pdiff{S_1}{G'}
+  \nonumber
+  F_2^* &=&
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \left[
+    \frac{15}{32}\frac{L'^5}{G'^5}\left(
+    1 - \frac{18}{5}\frac{H^2}{G'^2} + \frac{H^4}{G'^4}
+    \right)
+    +
+    \frac{3}{8}\frac{L'^6}{G'^6}\left(
+    1 - 6\frac{H^2}{G'^2} + 9\frac{H^4}{G'^4}
+    \right)
+    -
+    \frac{15}{32}\frac{L'^7}{G'^7}\left(
+    1 - 2\frac{H^2}{G'^2} - 7 \frac{H^4}{G'^4}
+    \right)
+    \right]
+  \\
+  &+&
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \left[
+    -\frac{3}{16}
+    \left(
+    \frac{L'^5}{G'^5}
+    -
+    \frac{L'^7}{G'^7}
+    \right)
+    \left(
+    1 - 16\frac{H^2}{G'^2} + 15\frac{H^4}{G'^4}
+    \right)
+    \right]\cos 2g'.
 \end {eqnarray}
+\normalsize
+\subsubsection{Second Transformation of the Hamiltonian}
+From $(\ref{eq:F_0_star})$ and $(\ref{eq:F_1_star})$,
+\begin {eqnarray}
+  F^* &=& F_0^* + F_1^* + F_2^*
+  =
+  \frac{\mu^4}{2L'^2}
+  +
+  \frac{\mu^4k_2}{L'^3G'^3}
+  \left(
+  -\frac{1}{2} + \frac{3}{2}\frac{H'^2}{G'^2}
+  \right)
+  +
+  F_2^*
+  ,
+\end {eqnarray}
+where $F_2^*$ is divided into secular and periodic parts
+\begin {eqnarray}
+  F_2^*(L', G', H, g) &=& F_{2s}^*(L', G', H) + F_{2p}^*(L', G', H, g').
+\end {eqnarray}
+Define new determining function
+\begin {eqnarray}
+  S''^* &:=& L''l' + G''g' + H''h' + S_1^*(L'', G'', H'', g')
+\end {eqnarray}
+and express the new Hamiltonian
+\begin {eqnarray}
+  F^{**} &=& F_0^{**} + F_1^{**} + F_2^{**}
+\end {eqnarray}
+We then note that
+\begin {eqnarray}
+  G' &=& \pdiff{S^*}{g'} = \pdiff{}{g'}(S_0^* + S_1^*) = G'' + \pdiff{S_1^*}{g'}
+\end {eqnarray}
+and require
+\begin {eqnarray}
+  &\:& F_0^{*}(L') + F_1^*\left(L', G'' + \pdiff{S_1^*}{g'}, H, -, -, -\right)
+  + F_2^*\left(L', G'' + \pdiff{S_1^*}{g'}, H, -, g', -\right) \\\nonumber
+  &=&  F_0^{**}(L') + F_1^{**}(L', G'', H, -, -, -)
+\end {eqnarray}
+The partial derivative in the $F_2^*$ term would lead to order three term and is thus ignored.
+Expanding as Taylor series expansion w.r.t. $(L', G'', H)$ and equating degrees of
+same order, we obtain
+\begin {eqnarray}
+  F_0^* &=& F_0^{**},
+  \\
+  F_1^* &=& F_1^{**},
+  \\
+  \label{eq:F_2p_order2}
+  \pdiff{F_1^*}{G''}\pdiff{S_1^*}{g'} + F_{2p}^* &=& 0,
+  \\
+  F_{2s}^* &=& F_2^{**}.
+\end {eqnarray}
+The first-order part $S_1^*$ of the generating function can be solved from 
+$(\ref{eq:F_2p_order2})$ by first computing
+\begin {eqnarray}
+  \pdiff{F_1^*}{G''}
+  &=&
+  -\frac{\mu^4k_2}{L'^3G'^4}\left(-\frac{3}{2} + \frac{9}{2}\frac{H^2}{G'^2}\right)
+  -\frac{\mu^4k_2}{L'^3G'^4}\frac{6}{2}\frac{H^2}{G'^2}
+  \\\nonumber
+  &=&
+  -\frac{\mu^4k_2}{L'^3G'^4}\left(
+  -\frac{3}{2} + \frac{15}{2}\frac{H^2}{G'^2}
+  \right)
+  \\\nonumber
+  &=&
+  \frac{2}{3}\frac{\mu^4k_2}{L'^3G'^4}\left(
+  1 - 5\frac{H^2}{G'^2}
+  \right)  
+\end {eqnarray}
+and then
+\begin {eqnarray}
+  \label{eq:d_S1_star_dg}
+  \pdiff{S_1^*}{g'} &=& -F_{2p}^*\left(\pdiff{F_1^*}{G''}\right)^{-1}
+  \\\nonumber
+  &=&
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \frac{L'^3G''^4}{\mu^4k_2}
+  \left[
+    \frac{3}{16}
+    \left(
+    \frac{L'^5}{G''^5}
+    -
+    \frac{L'^7}{G''^7}
+    \right)
+    \left(
+    1 - 16\frac{H^2}{G''^2} + 15\frac{H^4}{G''^4}
+    \right)
+    \right]\cos 2g'
+  \frac{2}{3}
+  \left(
+  1 - 5\frac{H^2}{G''^2}
+  \right)^{-1}
+  \\\nonumber
+  &=&
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \frac{L'^3G''^4}{\mu^4k_2}
+  \left[
+    \frac{1}{8}
+    \left(
+    \frac{L'^5}{G''^5}
+    -
+    \frac{L'^7}{G'^7}
+    \right)
+    \left(
+    1 - 16\frac{H^2}{G''^2} + 15\frac{H^4}{G''^4}
+    \right)
+    \right]\cos 2g'
+  \left(
+  1 - 5\frac{H^2}{G''^2}
+  \right)^{-1}
+  \\\nonumber
+  &=&
+  \gamma_2 G''
+  \left[
+    \frac{1}{8}\left(
+    \frac{L'^2}{G''^2}
+    -
+    \frac{L'^4}{G''^4}
+    \right)
+    \left(
+    1 - 16\frac{H^2}{G''^2} + 15\frac{H^4}{G''^4}
+    \right)
+    \right]
+  \left(
+  1 - 5\frac{H^2}{G''^2}
+  \right)^{-1}\cos 2g'
+  \\\nonumber
+  &=&
+  \gamma_2 G''
+    \left(
+    \frac{L'^2}{G'^2}
+    -
+    \frac{L'^4}{G'^4}
+    \right)
+    \dfrac{\frac{1}{8}\left(1 - 11\frac{H^2}{G''^2}\right)\left(1 - 5\frac{H^2}{G''^2}\right)
+          -5\frac{H^4}{G''^4}}
+          {\left(1 - 5\frac{H'^2}{G''^2}\right)}\cos 2g'
+    \\\nonumber
+    &=&
+  \gamma_2 G''
+    \left(
+    \frac{L'^2}{G'^2}
+    -
+    \frac{L'^4}{G'^4}
+    \right)
+    \left[
+      \frac{1}{8}\left(1 - 11\frac{H^2}{G''^2}\right)
+      -
+      5\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+      \right]\cos 2g'.
+\end {eqnarray}
+Thus, we immediately obtain the first-order part of the generating function
+\begin {eqnarray}
+  \label{eq:S_1_star}
+  S_1^* &=&
+  \gamma_2 G''
+    \left(
+    \frac{L'^2}{G'^2}
+    -
+    \frac{L'^4}{G'^4}
+    \right)
+    \left[
+      \frac{1}{16}\left(1 - 11\frac{H^2}{G''^2}\right)
+      -
+      \frac{5}{2}\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+      \right]\sin 2g''.
+\end {eqnarray}
+\subsubsection{Long-Period Terms}
+With $(\ref{eq:d_S1_star_dg})$ and $(\ref{eq:S_1_star})$ we can compute the long-period terms
+\begin {eqnarray}
+  G' &=& G'' + \pdiff{S_1^*}{g'}
+  \\\nonumber
+  &=&
+  G''\left\{
+  1 +
+  \gamma_2
+\left(
+    \frac{L'^2}{G'^2}
+    -
+    \frac{L'^4}{G'^4}
+    \right)
+    \left[
+      \frac{1}{8}\left(1 - 11\frac{H^2}{G''^2}\right)
+      -
+      5\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+      \right]\cos 2g''  
+    \right\}
+\end {eqnarray}
+To compute the long-period terms in the mean anomaly $l'$, note that
+\begin {eqnarray}
+  \pdiff{\gamma_2}{L'} &=& \pdiff{}{L'}\frac{\mu^2k_2}{L'^4}
+  = -4\frac{\mu^2k_2}{L'^5} = -4\frac{\gamma_2}{L'}.
+\end {eqnarray}
+and
+\begin {eqnarray}
+  \pdiff{}{L'}\gamma_2\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)
+  =
+  \gamma_2\left(-4\frac{L'}{G''^2} + 4\frac{L'^3}{G''^4}\right)
+  +
+  \gamma_2\left(2\frac{L'}{G''^2} - 4\frac{L'^3}{G''^4}\right)
+  =
+  -2\gamma_2\frac{L'}{G''^2}
+\end {eqnarray}
+Thus, 
+\begin {eqnarray}
+    l' &=& l'' - \pdiff{S_1^*}{L'}
+    \\\nonumber
+    &=&
+    l'' + 
+  \gamma_2 \frac{L'}{G''}
+    \left[
+      \frac{1}{8}\left(1 - 11\frac{H^2}{G''^2}\right)
+      -
+      5\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+      \right]\sin 2g''.
+\end {eqnarray}
+To derive long-period terms in $g'$, we perform differentiation of
+$(\ref{eq:S_1_star})$ in three parts:
+\begin {eqnarray}
+  S_1^* &=&
+  \gamma_2 
+    \underbrace{\left(
+    \frac{L'^2}{G''}
+    -
+    \frac{L'^4}{G''^3}
+    \right)}_{\textrm{Part 1}}
+    \left[
+      \underbrace{\frac{1}{16}\left(1 - 11\frac{H^2}{G''^2}\right)}_{\textrm{Part 2}}
+      \underbrace{
+      -
+      \frac{5}{2}\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}}_{\textrm{Part 3}}
+      \right]\sin 2g''.  
+\end {eqnarray}
+Part 1 (without the $\sin 2g''$ term)
+\begin {eqnarray}
+  \pdiff{}{G'}\gamma_2\left(\frac{L'^2}{G''} - \frac{L'^4}{G''^3}\right)\left[\cdot\right]\sin 2g''
+  &=&
+  -\gamma_2\frac{L'^2}{G''^2}[\cdot]
+  +3\gamma_2\frac{L'^4}{G''^4}[\cdot]
+  \\\nonumber
+  &=&
+  -\gamma_2
+    \frac{1}{16}\frac{L'^2}{G''^2}\left(1 - 11\frac{H^2}{G''^2}\right)
+    +
+    \gamma_2
+    \frac{3}{16}\frac{L'^4}{G''^4}\left(1 - 11\frac{H^2}{G''^2}\right)
+  \\\nonumber
+  &+&
+  \gamma_2
+    \frac{5}{2}\frac{L'^2}{G''^2}\frac{H^4}{G''^4}
+    \left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+    -
+    \gamma_2\frac{15}{2}\frac{L'^4}{G''^4}\frac{H^4}{G''^4}
+    \left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+\end {eqnarray}
+Part 2 (without the $\sin 2g''$ term)
+\begin {eqnarray}
+  \gamma_2
+  \frac{1}{16}
+  \left(
+  \frac{L'^2}{G''} - \frac{L'^4}{G''^3}
+  \right)
+  \pdiff{}{G'}\left(
+  1 - 11\frac{H^2}{G''^2}
+  \right)
+  &=&
+  \gamma_2\frac{11}{8}\frac{L'^2}{G''^2}\frac{H^2}{G''^2}
+  -
+  \gamma_2\frac{11}{8}\frac{L'^4}{G''^4}\frac{H^2}{G''^2}.
+\end {eqnarray}
+Part 3 (without the $\sin 2g''$ term)
+\begin {eqnarray}
+  &\:&
+  -\gamma_2
+  \frac{5}{2}
+  \left(
+  \frac{L'^2}{G''} - \frac{L'^4}{G''^3}
+  \right)
+  \pdiff{}{G'}
+  \frac{H^4}{G''^4}
+  \left(
+  1 - 5\frac{H^2}{G''^2}
+  \right)^{-1}
+  \\\nonumber
+  &=&
+  -\gamma_2
+  \frac{5}{2}
+  \left(
+  \frac{L'^2}{G''} - \frac{L'^4}{G''^3}
+  \right)
+  \frac{(-4H^4/G''^5)(1 - 5H^2/G''^2) - (H^4/G''^4)(-10H^2/G''^3)}
+       {(1 - 5H^2/G''^2)^2}
+       \\\nonumber
+  &=&
+  \gamma_2\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)
+  \left[
+    10\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+    -
+    25\frac{H^6}{G''^6}\left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
+    \right]
+  \\\nonumber
+  &=&
+  10\gamma_2\frac{L'^2}{G''^2}\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+  - 10\gamma_2\frac{L'^4}{G''^4}\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+  \\\nonumber
+  &-& 25\gamma_2\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)\frac{H''^6}{G''^6}
+  \left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
+\end {eqnarray}
+\textbf{The sign of the last term is inconsistent with \cite{brouwer}}.
 
+Collecting the parts according to the order of the inverse term and the order of
+$L'^2/G''^2$ the last three parts
+\begin {eqnarray}
+  \pdiff{S_1^*}{G''}
+  &=&
+  \gamma_2\left[
+    - \frac{1}{16}\frac{L'^2}{G''^2}\left(1 - 33\frac{H^2}{G''^2}\right)
+    +
+    \frac{3}{16}\frac{L'^4}{G''^4}\left(1 - \frac{55}{3}\frac{H^2}{G''^2}\right)
+    \right.
+    \\\nonumber
+    &+&
+    \left.
+    \left(\frac{25}{2}\frac{L'^2}{G''^2} - \frac{35}{2}\frac{L'^4}{G''^4}\right)
+    \frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+    -
+    25\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)\frac{H''^6}{G''^6}
+  \left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
+    \right]
+\end {eqnarray}
+and we obtain
+\begin {eqnarray}
+  g' &=& g'' - \pdiff{S_1^*}{G''}
+  \\\nonumber
+  &=&
+  g'' +
+  \gamma_2\left[
+    \frac{1}{16}\frac{L'^2}{G''^2}\left(1 - 33\frac{H^2}{G''^2}\right)
+    -
+    \frac{3}{16}\frac{L'^4}{G''^4}\left(1 - \frac{55}{3}\frac{H^2}{G''^2}\right)
+    \right.
+    \\\nonumber
+    &-&
+    \left.
+    \left(\frac{25}{2}\frac{L'^2}{G''^2} - \frac{35}{2}\frac{L'^4}{G''^4}\right)
+    \frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+    %\right.
+    +
+    %\left.
+    25\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)\frac{H''^6}{G''^6}
+  \left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
+    \right],
+\end {eqnarray}
+where the sign of the last term does not match\cite{brouwer}.
 \subsection{Explicit Solution for $J_2$ Harmonic}
 \subsubsection{Short-Period Terms}
 \subsubsection{Long-Period Terms}

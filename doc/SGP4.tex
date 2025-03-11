@@ -93,11 +93,11 @@
 }
 \newcommand{\pdiff}[2]
 {
-	\frac{\partial #1}{\partial #2}
+	\dfrac{\partial #1}{\partial #2}
 }
 \newcommand{\diff}[2]
 {
-	\frac{d #1}{d #2}
+	\dfrac{d #1}{d #2}
 }
 \newcommand{\vali}
 {
@@ -713,14 +713,17 @@ The new Hamiltonian
 \end {eqnarray}
 Thus, we have the Hamiltonian formulation in terms of Delaunay variables
 \begin {eqnarray}
+  \label{eq:hamiltonian_delaunay}
   \boxed{
   \begin {array}{lll}
     l = M,           & L = \sqrt{a\mu},                & \\
-    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)}, & F = -\dfrac{\mu}{2L^2}\\
+    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)}, & F = -\dfrac{\mu^2}{2L^2}\\
     h = \Omega,      & H =  \sqrt{a\mu(1 - e^2)}\cos I,      &
   \end {array}
   }
 \end {eqnarray}
+Note that \cite{brouwer} uses different sign convention and the Hamiltonian will
+have different sign.
 \subsection{Useful Relations}
 In this section, we derive several relations used by Brouwer in \cite{brouwer} involving the
 Delaunay variables and Keplerian orbits. 
@@ -1168,10 +1171,10 @@ Note that Brouwer calls the gravitational potential the force function and uses 
 \subsection{Disturbing Function}
 The first term in $(\ref{eq:brouwer_potential})$ corresponds to the unperturbed potential of a two-body
 problem, where the Keplerian elements are constants. The additional terms constitute a perturbing potential that
-leads to perturbations in the Keplerian elements. That is, instead of the Hamiltonian $(\ref{eq:TODO})$, we
+leads to perturbations in the Keplerian elements. That is, instead of the Hamiltonian $(\ref{eq:hamiltonian_delaunay})$, we
 have
 \begin {eqnarray}
-  F &=& \frac{\mu}{2L^2} + R,
+  F &=& \frac{\mu^2}{2L^2} + R,
 \end {eqnarray}  
 where $R = R_2 + R_3 + R_4 + R_5$ is the \textbf{disturbing function} and $R_k$ denote the part of $R$
 corresponding to $k$:th degree in $(\ref{eq:brouwer_potential})$. In this section, we will derive $R$
@@ -1389,6 +1392,76 @@ to obtain the disturbing function $R_5$ corresponding to the $J_5$ harmonic
 \end {eqnarray}
 
 \subsection{Hamiltonian Formulation}
+Combining the results from previous sections, we have the Delaunay variables
+\begin {eqnarray}
+  \boxed{
+  \begin {array}{ll}
+    l = M,           & L = \sqrt{a\mu}, \\
+    g = \omega,\quad & G = \sqrt{a\mu(1 - e^2)},\\
+    h = \Omega,      & H =  \sqrt{a\mu(1 - e^2)}\cos I,
+  \end {array}
+  }
+\end {eqnarray}
+and the Hamiltonian
+\begin {eqnarray}
+  \boxed{F = \frac{\mu^2}{2L^2} + R_2 + R_3 + R_4 + R_5}.
+\end {eqnarray}
+Due to the sign convention used in \cite{brouwer}, the Hamilton's equations obtain
+the form:
+\begin {eqnarray}
+  \label{eq:hamilton}
+    \boxed{
+  \begin {array}{lll}
+    \diff{l}{t} = -\pdiff{F}{L},& \diff{g}{t} = -\pdiff{F}{G}, & \diff{h}{t} = -\pdiff{F}{H},
+    \\\\
+    \diff{L}{t} = \pdiff{F}{l},& \diff{G}{t} = \pdiff{F}{g}, &  \diff{H}{t} = \pdiff{F}{h}.
+  \end {array}
+  }
+\end {eqnarray}
+
+The parts of the disturbing function can be expanded:
+\begin {eqnarray}
+  R_2 &:=&  \frac{\mu^4 k_2}{L^6}\left[
+    \left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G^2}\right)\frac{a^3}{r^3}
+    + \left(\frac{3}{2} - \frac{3}{2}\frac{H^2}{G^2}\right)\cos(2g + 2f)\frac{a^3}{r^3}
+    \right],
+  \\  
+  R_3 &:=& \frac{\mu A_{3,0}}{r^4}\sin I\left[
+  \left(
+  -\frac{3}{2} + \frac{15}{8}\frac{H^2}{G^2}
+  \right)\sin(g + f)
+  - \frac{5}{8}\frac{H^2}{G^2}\sin(3g + 3f)    
+  \right],
+  \\
+  R_4 &:=&
+  \frac{\mu^6 k_4}{L^{10}}\left[
+  \left(
+  \frac{3}{8} - \frac{15}{4}\frac{H^2}{G^2} + \frac{35}{8}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\right.\\
+  &+&\quad\quad\:\,
+  \left(
+  -\frac{5}{6} + \frac{20}{3}\frac{H^2}{G^2} - \frac{35}{6}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\cos(2g + 2f)
+  \nonumber\\\nonumber
+  &+&\quad\quad\:\,
+  \left.
+  \left(
+  \frac{35}{24} - \frac{35}{12}\frac{H^2}{G^2} + \frac{35}{24}\frac{H^4}{G^4}
+  \right)\frac{a^5}{r^5}\cos(4g +4f)\right],
+\\  
+  R_5 &:=& \frac{\mu A_{5,0}}{r^6}\left[
+    \left(\frac{15}{8}\sin I - \frac{105}{16}\sin^3I + \frac{315}{64}\sin^5I\right) \sin(g + f)\right.
+    \\\nonumber
+    &+&
+    \quad\quad\quad\quad\quad\quad\quad\quad\left(\frac{35}{15}\sin^3I - \frac{315}{128}\sin^5I\right)\sin(3g + 3f)
+    \\\nonumber
+    &+&\left.
+    \hspace{5.4cm}
+    \left(\frac{63}{128}\sin^5I\right)\sin(5g + 5f)
+    \right]
+\end {eqnarray}
+
+
 
 \newpage
 \section{Solution of the Problem}
@@ -1441,7 +1514,7 @@ are expanded as Taylor series in powers of some parameter (e.g. $k_2$ in \cite{b
 and terms of equal order are equated.
 For example, for the problem involving only the $J_2$ harmonic, we can divide F as follows:
 \begin {eqnarray}
-  F = F_0 + F_1=  \underbrace{\frac{\mu^4}{2L^2}}_{F_0}
+  F = F_0 + F_1=  \underbrace{\frac{\mu^2}{2L^2}}_{F_0}
   +
   \underbrace{
   \frac{\mu^4 k_2}{L^6}\left[
@@ -1996,6 +2069,7 @@ Now the remaining part of the new Hamiltonian can be computed (TODO)
     \right)
     \right]
   \\
+  \label{eq:F_2_star}
   &+&
   \frac{\mu^6k_2^2}{L'^{10}}
   \left[
@@ -2016,11 +2090,11 @@ From $(\ref{eq:F_0_star})$ and $(\ref{eq:F_1_star})$,
 \begin {eqnarray}
   F^* &=& F_0^* + F_1^* + F_2^*
   =
-  \frac{\mu^4}{2L'^2}
+  \frac{\mu^2}{2L'^2}
   +
   \frac{\mu^4k_2}{L'^3G'^3}
   \left(
-  -\frac{1}{2} + \frac{3}{2}\frac{H'^2}{G'^2}
+  -\frac{1}{2} + \frac{3}{2}\frac{H^2}{G'^2}
   \right)
   +
   F_2^*
@@ -2049,7 +2123,7 @@ and require
   &=&  F_0^{**}(L') + F_1^{**}(L', G'', H, -, -, -)
 \end {eqnarray}
 The partial derivative in the $F_2^*$ term would lead to order three term and is thus ignored.
-Expanding as Taylor series expansion w.r.t. $(L', G'', H)$ and equating degrees of
+Expanding as Taylor series expansion w.r.t. $(L', G'', H)$ and equating terms with the
 same order, we obtain
 \begin {eqnarray}
   F_0^* &=& F_0^{**},
@@ -2059,6 +2133,7 @@ same order, we obtain
   \label{eq:F_2p_order2}
   \pdiff{F_1^*}{G''}\pdiff{S_1^*}{g'} + F_{2p}^* &=& 0,
   \\
+  \label{eq:F_2s_F_2_star2}
   F_{2s}^* &=& F_2^{**}.
 \end {eqnarray}
 The first-order part $S_1^*$ of the generating function can be solved from 
@@ -2363,11 +2438,93 @@ and we obtain
   \left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
     \right],
 \end {eqnarray}
-where the sign of the last term does not match\cite{brouwer}.
+\textbf{where the sign of the last term does not match \cite{brouwer}.}
+In order to compute $\partial S_1^*/H$, we first compute
+\small
+\begin {eqnarray}
+  \frac{1}{16}\pdiff{}{H}\left(1 - 11\frac{H^2}{G''^2}\right)
+  &=&
+  -\frac{11}{8}\frac{H}{G''^2},
+  \\
+  -\frac{5}{2}\pdiff{}{H}\frac{H^4}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+  &=&
+  -\frac{5}{2}
+  \frac{(4H^3/G''^4)(1 - 5H^2/G''^2) - (H^4/G''^4)(-10H/G''^2)}{(1 - 5H^2/G''^2)^2}
+  \\\nonumber
+  &=&
+  -10\frac{H^3}{G''^4}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+  -25\frac{H^5}{G''^6}\left(1 - 5\frac{H^2}{G''^2}\right)^{-2}.
+\end {eqnarray}
+\normalsize
+Thus,
+\begin {eqnarray}
+  h' &=& h'' - \pdiff{S^*}{H}
+  \\\nonumber
+  &=& h'' + \gamma_2\left(\frac{L'^2}{G''^2} - \frac{L'^4}{G''^4}\right)
+  \left[
+    \frac{11}{8}\frac{H}{G''}
+    +
+    10\frac{H^3}{G''^3}\left(1 - 5\frac{H^2}{G''^2}\right)^{-1}
+    +
+    25
+    \frac{H^5}{G''^5}\left(1 - 5\frac{H^2}{G''^2}\right)^{-2}
+    \right]
+\end {eqnarray}
+The Hamiltonian can be now expanded
+\begin {eqnarray}
+  \label{eq:F_star_star}
+  F^{**} &=& F_0^{**} + F_1^{**} + F_2^{**}
+  \\\nonumber
+  &=&
+  \frac{\mu^4}{2L'^2}
+  +
+  \frac{\mu^4k_2}{L'^3G''^3}\left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G''^2}\right)
+  + F_2^{**},
+\end {eqnarray}
+where from $(\ref{eq:F_2_star})$ and $(\ref{eq:F_2s_F_2_star2})$, we obtain
+\begin {eqnarray}
+  F_2^{**}
+  &=&
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \left[
+    \frac{15}{32}\frac{L'^5}{G''^5}\left(
+    1 - \frac{18}{5}\frac{H^2}{G''^2} + \frac{H^4}{G''^4}
+    \right)
+    +
+    \frac{3}{8}\frac{L'^6}{G''^6}\left(
+    1 - 6\frac{H^2}{G''^2} + 9\frac{H^4}{G''^4}
+    \right)
+    \right.
+    \\\nonumber
+    &-&\left.
+    \quad\quad\:\:\:\frac{15}{32}\frac{L'^7}{G''^7}\left(
+    1 - 2\frac{H^2}{G''^2} - 7 \frac{H^4}{G''^4}
+    \right)
+    \right]
+.
+\end {eqnarray}
 \subsection{Explicit Solution for $J_2$ Harmonic}
-\subsubsection{Short-Period Terms}
-\subsubsection{Long-Period Terms}
 \subsubsection{Secular Terms}
+The Hamiltonian $(\ref{eq:F_star_star})$ does not explicitly contain any of the
+angle variables $l'', g''$ or $h''$. Then
+Hamilton's equations $(\ref{eq:hamilton})$ imply for the canonical momentums
+\begin {eqnarray}
+  \diff{L'}{t} &=& \pdiff{F^{**}}{l''} = 0
+  \\
+  \diff{G''}{t} &=& \pdiff{F^{**}}{g''} = 0
+  \\
+  \diff{H}{t} &=& \pdiff{F^{**}}{h''} = 0
+\end {eqnarray}
+Thus, $L', G''$ and $H$ are independent of time.
+Let's denote
+\begin {eqnarray}
+  n_0 &:=& \frac{\mu^2}{L'^3}.
+\end {eqnarray}
+The secular terms can be now solved from $(\ref{eq:F_star_star})$:
+\begin {eqnarray}
+  \diff{l''}{t} &=& -\pdiff{F^{**}}{L'}
+\end {eqnarray}
+
 \subsection{Elements and Orbit State Vectors}
 
 \newpage

@@ -2516,14 +2516,282 @@ Hamilton's equations $(\ref{eq:hamilton})$ imply for the canonical momentums
   \diff{H}{t} &=& \pdiff{F^{**}}{h''} = 0
 \end {eqnarray}
 Thus, $L', G''$ and $H$ are independent of time.
+To solve the time-derivatives of $l'', g'', h''$, we need to compute the derivatives
+\begin {eqnarray}
+  \pdiff{F^{**}}{L'}
+  &=&
+  -\frac{\mu^2}{L'^3} - 3\frac{\mu^4k_2}{L'^4G''^3}
+  \left(
+  -\frac{1}{2}
+  +
+  \frac{3}{2}\frac{H^2}{G''^2}
+  \right)
+  \\\nonumber
+  &+&
+  \frac{\mu^6k_2^2}{L'^{11}}
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    -5\cdot\frac{15}{32}&
+    -4\cdot\frac{3}{8}&
+    -3\left(-\frac{15}{32}\right)
+    \\
+    -5\cdot\frac{15}{32}\left(-\frac{18}{5}\right) &
+    -4\cdot\frac{3}{8}(-6) &
+    -3\left(-\frac{15}{32}\right)(-2)
+    \\
+    -5\cdot\frac{15}{32} &
+    -4\cdot\frac{3}{8}\cdot 9 &
+    -3\left(-\frac{15}{32}\right)(-7)    
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+  \\\nonumber
+  &=&
+  -\frac{\mu^2}{L'^3} - 3\frac{\mu^4k_2}{L'^4G''^3}
+  \left(
+  -\frac{1}{2}
+  +
+  \frac{3}{2}\frac{H^2}{G''^2}
+  \right)
+  +
+  \frac{\mu^6k_2^2}{L'^{11}}
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    -\frac{75}{32} & -\frac{3}{2} & \frac{45}{32} \\\\
+    \frac{135}{16} & 9 & -\frac{45}{16} \\\\
+    -\frac{75}{32} & -\frac{27}{2} & -\frac{315}{32} 
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+\end {eqnarray}
+\begin {eqnarray}
+  \pdiff{F^{**}}{G''}
+  &=&
+  - 3\frac{\mu^4k_2}{L'^3G''^4}
+  \left(
+  -\frac{1}{2}
+  +
+  \frac{3}{2}\frac{H^2}{G''^2}
+  \right)
+  +
+  \frac{\mu^4k_2}{L'^3G''^4}
+  \left(
+  -
+  \frac{6}{2}\frac{H^2}{G''^2}
+  \right)
+  \\\nonumber
+  &+&
+  \frac{\mu^6k_2^2}{L'^{11}}
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    -\frac{75}{32}&
+    -\frac{9}{4}&
+    \frac{105}{32}
+    \\\\
+    \frac{-7\cdot (-18)\cdot 15}{5\cdot 32} &
+    \frac{-8\cdot 3\cdot (-6)}{8} &
+    \frac{-9\cdot (-15)\cdot(-2)}{32}
+    \\\\
+    \frac{-9\cdot 15}{32} &
+    \frac{-10\cdot 3\cdot 9}{8} &
+    \frac{-11\cdot(-15)\cdot(-7)}{32}    
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+  \\\nonumber
+  &=&
+  -3\frac{\mu^4k_2}{L'^3G''^4}\left(-\frac{1}{2} + \frac{5}{2}\frac{H^2}{G''^2}\right)
+  +
+  \frac{\mu^6k_2^2}{L'^{11}}
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    -\frac{75}{32} & -\frac{9}{4} & \frac{105}{32} \\\\
+    \frac{189}{16} & 18 & -\frac{135}{16} \\\\
+    -\frac{135}{32} & -\frac{135}{4} & -\frac{1155}{32} 
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+\end {eqnarray}
+\begin {eqnarray}
+  \pdiff{F^{**}}{H}
+  &=&
+  3\frac{\mu^4k_2}{L'^7}\frac{L'^4}{G''^4}\frac{H}{G''}
+  +
+  \frac{\mu^6k_2^2}{L'^{10}}
+  \begin {bmatrix}
+    \dfrac{H}{G''^2} & \dfrac{H^3}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \frac{2\cdot 15\cdot(-18)}{32\cdot 5}
+    &
+    \frac{2\cdot 3\cdot (-6)}{8}
+    &
+    \frac{2\cdot(-15)\cdot (-2)}{32}
+    \\\\
+    \frac{4\cdot 15}{32}
+    &
+    \frac{4\cdot 3\cdot 9}{8}
+    &
+    \frac{4\cdot(-15)\cdot(-7)}{32}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L''^5}{G''^5} \\\dfrac{L''^6}{G''^6} \\\dfrac{L''^7}{G''^7}  
+  \end {bmatrix}
+  \\\nonumber
+  &=&
+  3\frac{\mu^4k_2}{L'^7}\frac{L'^4}{G''^4}\frac{H}{G''}
+  +
+  \frac{\mu^6k_2^2}{L'^{11}}
+  \begin {bmatrix}
+    \dfrac{H}{G''} & \dfrac{H^3}{G''^3}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \frac{-27}{8}
+    &
+    \frac{-9}{2}
+    &
+    \frac{15}{8}
+    \\\\
+    \frac{15}{8}
+    &
+    \frac{27}{4}
+    &
+    \frac{105}{8}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L''^6}{G''^6} \\\dfrac{L''^7}{G''^7} \\\dfrac{L''^8}{G''^8}
+  \end {bmatrix}
+\end {eqnarray}
 Let's denote
 \begin {eqnarray}
-  n_0 &:=& \frac{\mu^2}{L'^3}.
+  n_0 &:=& \frac{\mu^2}{L'^3},
 \end {eqnarray}
-The secular terms can be now solved from $(\ref{eq:F_star_star})$:
+which implies
 \begin {eqnarray}
-  \diff{l''}{t} &=& -\pdiff{F^{**}}{L'}
+  n_0\gamma_2 = \frac{\mu^4k_2}{L'^7},
+  \quad
+  n_0\gamma_2^2 = \frac{\mu^6k_2^2}{L'^{11}}.
 \end {eqnarray}
+Thereafter, we obtain from Hamilton's equations $(\ref{eq:hamilton})$
+\small
+\begin {eqnarray}
+  \diff{l''}{t} &=& -\pdiff{L^{**}}{L'}
+  \\\nonumber
+  &=&
+  n_0\left\{
+  1 + 3\gamma_2\frac{L'^3}{G''^3}\left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G''^2}\right)
+  %\right.
+  %\\\nonumber
+  %&+&
+  %  \left.
+  +
+  \gamma_2^2
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \frac{75}{32} & \frac{3}{2} & -\frac{45}{32} \\\\
+    -\frac{135}{16} & -9 & \frac{45}{16} \\\\
+    \frac{75}{32} & \frac{27}{2} & \frac{315}{32} 
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+  \right\},
+  \\
+%\end {eqnarray}
+%\begin {eqnarray}
+  \diff{g''}{t} &=& -\pdiff{L^{**}}{G''}
+  \\\nonumber
+  &=&
+  n_0\left\{
+  3\gamma_2\frac{L'^4}{G''^4}\left(-\frac{1}{2} + \frac{5}{2}\frac{H^2}{G''^2}\right)
+  %\right.
+  %\\\nonumber
+  %&+&
+  %  \left.
+  +
+  \gamma_2^2
+  \begin{bmatrix}
+    1 & \dfrac{H^2}{G''^2} & \dfrac{H^4}{G''^4}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \frac{75}{32} & \frac{9}{4} & -\frac{105}{32} \\\\
+    -\frac{189}{16} & -18 & \frac{135}{16} \\\\
+    \frac{135}{32} & \frac{135}{4} & \frac{1155}{32} 
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L'^5}{G''^5}
+    \\
+    \dfrac{L'^6}{G''^6}
+    \\
+    \dfrac{L'^7}{G''^7}
+  \end {bmatrix}
+  \right\},
+%\end {eqnarray}
+  %\begin {eqnarray}
+  \\
+  \diff{h''}{t} &=& -\diff{L^{**}}{H}
+  %\\\nonumber
+  =
+  n_0\left\{
+  -3\gamma_2\frac{L'^4}{G''^4}\frac{H}{G''}
+  +
+  \gamma_2^2
+    \begin {bmatrix}
+    \dfrac{H}{G''} & \dfrac{H^3}{G''^3}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \frac{27}{8}
+    &
+    \frac{9}{2}
+    &
+    \frac{-15}{8}
+    \\\\
+    \frac{-15}{8}
+    &
+    \frac{-27}{4}
+    &
+    \frac{-105}{8}
+  \end {bmatrix}
+  \begin {bmatrix}
+    \dfrac{L''^6}{G''^6} \\\dfrac{L''^7}{G''^7} \\\dfrac{L''^8}{G''^8}
+  \end {bmatrix}
+  \right\}.
+\end {eqnarray}
+
 
 \subsection{Elements and Orbit State Vectors}
 

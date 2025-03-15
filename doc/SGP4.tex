@@ -121,6 +121,13 @@
 
 \tableofcontents
 
+\newpage
+\section{Introduction}
+\subsection{Satellite Orbits}
+\subsection{Brouwer and the SGP4 Solution}
+\subsection{Motivation}
+
+\newpage
 \section{Two-Body Problem}
 To discuss the solution presented in \cite{brouwer}, we need to formulate the two-body problem in terms
 of Delaunay elements. Thus, this section is dedicated to canonical transformations and the Hamilton-Jacobi
@@ -132,7 +139,8 @@ and then
 use a canonical transformation to derive a Hamiltonian formulation in terms of Delaunay Elements
 (section \ref{sec:delaunay}).
 
-The discussion in this section is roughly based on sections 6 and 7 of \cite{karttunen}. 
+The discussion in this section is roughly based on sections 6 and 7 of the textbook
+\cite{karttunen}. 
 \subsection{Hamiltonian Formulation in Spherical Coordinates}
 \label{sec:hamiltonian_sph}
 Consider the problem of a point particle with mass $m$ in a gravitational potential $V$, where the kinetic
@@ -153,7 +161,8 @@ Thus, the Hamiltonian (using the notation in \cite{brouwer}) can be expressed
   F(r, \theta, \phi, p_r, p_\theta, p_\phi) &=& T + V = \frac{1}{2m}\left(p_r^2 + \frac{p_\theta^2}{r^2} + \frac{p_\phi^2}{r^2\cos^2\theta}\right) - \frac{\mu m}{r}.
 \end {eqnarray}
 In this section, we will use canonical transformations and the Hamilton-Jacobi equation to derive
-the Hamiltonian in terms of canonical coordinates and momenta called Delaunay Elements.
+the Hamiltonian in terms of canonical coordinates and momenta called
+the \textbf{Delaunay Elements}.
 
 \subsection{Canonical Transformations}
 \label{sec:canonical_transformations}
@@ -173,7 +182,9 @@ $S= S(\vc q, \vc p')$, which satisfy
 \label{sec:hamilton_jacobi}
 With Hamilton-Jacobi equation, we can derive canonical coordinates, which do not appear
 explicitly in the transformed Hamiltonian. Then, each canonical coordinate and momentum
-is independent of time. That is, for $F=F(r,\theta,\phi,p_r,p_\theta,p_\phi)$ we wish find
+is independent of time and the solution of the problem becomes trivial.
+
+That is, for $F=F(r,\theta,\phi,p_r,p_\theta,p_\phi)$ we wish find
 a generating function $S$ such that
 \begin {eqnarray}
   \label{eq:hjacobi1}
@@ -224,8 +235,8 @@ This yields
 The dependence w.r.t. variables $\phi$ and $t$ is limited to $dS_\phi/d\phi$ and $dS_t/dt$. Thus, there exists
 $\alpha_2$ and $\alpha_1$ such that
 \begin {eqnarray}
-  \frac{dS_\phi}{d\phi} = -\alpha_2,\quad
-  \frac{dS_t}{dt} = -\alpha_1.
+  \frac{dS_t}{dt} = -\alpha_1, \quad
+  \frac{dS_\phi}{d\phi} = \alpha_2,\quad.
 \end {eqnarray}
 The equation $(\ref{eq:hjacobi3})$ can be now written
 \begin {eqnarray}
@@ -238,7 +249,7 @@ The equation $(\ref{eq:hjacobi3})$ can be now written
   \left(\diff{S_\theta}{\theta}\right)^2
   +
   \frac{\alpha_2^2}{r^2\cos^2\theta}
-  }_{\alpha_1/r^2}
+  }_{\alpha_3/r^2}
   =
   2m
   \left(
@@ -258,24 +269,26 @@ and denoting the middle two terms with $\alpha_1/r^2$ we obtain
   \alpha_1 + \frac{\mu m}{r}
   \right)
   -
-  \frac{\alpha_1}{r^2}
+  \frac{\alpha_3}{r^2}
   }.
 \end {eqnarray}
 Similarly for $S_\theta$
 \begin {eqnarray}
   \left(\diff{S_\theta}{\theta}\right)^2
   &=&
+  \underbrace{
   2mr^2
   \left(
   \alpha_1
   +
   \frac{\mu m}{r}
   \right)
-  -r^2\left(\diff{S_r}{r}\right)^2  
+  -r^2\left(\diff{S_r}{r}\right)^2
+  }_{\alpha_3^2}
   -
   \frac{\alpha_2^2}{\cos^2\theta}
   =
-  \alpha_3^2 + \frac{\alpha_2^2}{\cos^2\theta}.
+  \alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}.
 \end {eqnarray}
 or
 \begin {eqnarray}
@@ -381,14 +394,14 @@ To derive $(\ref{eq:hjacobi_p3})$, we can compute
   \sqrt{\left(\pdiff{S}{\theta}\right)^2 + \frac{\alpha_2^2}{\cos^2\theta}}
   \\\nonumber
   &=&
-  \sqrt{p_\theta^2 + \frac{p\phi^2}{\cos^2\theta}}
+  \sqrt{p_\theta^2 + \frac{p_\phi^2}{\cos^2\theta}}
   \\\nonumber
   &=& mr^2\sqrt{\dot\theta^2 + \cos^2\theta\dot\phi^2}
   = mr^2\dot f = mk
   = m\sqrt{a\mu(1 - e^2)},
 \end {eqnarray}
 where $\dot f=\dot\theta^2 + \cos^2\theta\dot\phi^2$ is the time derivative of the natural anomaly
-since the sum is the square of total scalar angular speed.
+since the sum is the square of total scalar angular speed along a great circle.
 
 \subsubsection{Canonical Coordinates}
 The new canonical coordinates can be computed
@@ -418,7 +431,7 @@ The new canonical coordinates can be computed
   &=&
   \alpha_3\int\left(\alpha_3^2 - \frac{\alpha_2^2}{\cos^2\theta}\right)^{-1/2}d\theta
   -
-  \alpha_3\int\frac{1}{r}
+  \frac{\alpha_3}{m}\int\frac{m}{r^2}
   \left[2m\left(\alpha_1 + \frac{\mu m}{r}\right) - \frac{\alpha_3^2}{r^2}\right]^{-1/2}dr
   \\\nonumber
   &=& \alpha_3I_4 - \frac{\alpha_3}{m}I_3.
@@ -664,9 +677,9 @@ seek the following variables
   \\
   l &=& n(t + q_1)
   \\
-  H &=& \sqrt{a\mu(1 - e^2)}
+  H &=& \sqrt{a\mu(1 - e^2)}\cos I
   \\
-  G &=& \sqrt{a\mu(1 - e^2)}\cos I
+  G &=& \sqrt{a\mu(1 - e^2)}
   \\
   L &=& ?
 \end {eqnarray}
@@ -728,7 +741,7 @@ have different sign.
 In this section, we derive several relations used by Brouwer in \cite{brouwer} involving the
 Delaunay variables and Keplerian orbits. 
 
-We assume that the following equations for true anomaly are known
+We assume that the following equations for true anomaly are known \cite{karttunen}
 \begin {eqnarray}
   \label{eq:cosf}
   \cos f &=& \frac{\cos E - e}{1 - e\cos E},
@@ -1475,6 +1488,8 @@ To obtain a solution to the original problem, the solution is then transformed b
 original coordinates, where each canonical transformation introduces periodics (trigonometric
 functions) w.r.t variable reintroduced to the Hamiltonian.
 
+General overview of the approach can be found from \cite{vonzeipel_rand}. 
+
 \begin {figure}[h]
   \begin {center}
     \begin{tikzpicture}
@@ -1495,7 +1510,7 @@ functions) w.r.t variable reintroduced to the Hamiltonian.
     \caption{\label{fig:vonzeipel}Canonical transformations in \cite{brouwer}.}
   \end {center}
 \end {figure}
-Three systems will be used as shown in Figure \ref{fig:vonzeipel}:
+As shown in Figure \ref{fig:vonzeipel}, three systems will be used:
 \begin {itemize}
 \item The first system uses undotted variables $(L, G, H, l, g, h)$ and the Hamiltonian
   $F = F(L, G, H, l, g)$ explicitly dependent on both $l$ and $g$.
@@ -2791,7 +2806,104 @@ Thereafter, we obtain from Hamilton's equations $(\ref{eq:hamilton})$
   \end {bmatrix}
   \right\}.
 \end {eqnarray}
-
+\subsubsection{Interpretation of the Secular Terms}
+To interpret the secular terms, we consider the first-order part and perform the
+substitutions
+\begin {eqnarray}
+  L' = \sqrt{a\mu},
+  \quad
+  \gamma_2 = \frac{\mu^2k_2}{L'^4} = \frac{k_2}{a'^2} = \frac{J_2a_E^2}{2a'^2},
+  \quad
+  \frac{L'}{G''} = \frac{1}{\sqrt{1 - e''^2}},
+  \quad
+  \frac{H}{G''} = \cos I'',
+  \quad
+  n_0 = \sqrt{\mu}a^{-3/2}
+  .
+\end {eqnarray}
+Thereafter, we obtain expressions of regression rates in terms of familiar ``mean'' mean
+orbital elements 
+\begin {eqnarray}
+  \diff{M''}{t} =
+  \diff{l''}{t} &=&
+  n_0\left[
+    1 + 3\gamma_2\frac{L'^3}{G''^3}\left(-\frac{1}{2} + \frac{3}{2}\frac{H^2}{G''^2}\right)
+    \right]
+  \\\nonumber
+  &=&
+  n_0
+  \left[
+    1 + \frac{3}{4}J_2
+    \frac{a_E^2}{a'^2}
+    \frac{(-1 + 3\cos^2 I'')}{(1 - e''^2)^{3/2}}
+    \right]
+  ,
+  \\
+  \diff{\omega''}{t} =  
+  \diff{g''}{t} &=& n_0
+  \left[
+    3\gamma_2\frac{L'^4}{G''^4}
+    \left(-\frac{1}{2} + \frac{5}{2}\frac{H^2}{G''^2}\right)
+    \right]
+  \\\nonumber
+  &=&
+  n_0
+  \left[
+    3\frac{J_2a_E^2}{2a'^2}\frac{1}{(1-e''^2)^2}
+    \left(-\frac{1}{2} + \frac{5}{2}\cos^2 I''\right)
+    \right] 
+  \\\nonumber
+  &=&
+  n_0
+  \left[
+    \frac{3}{4}J_2
+    \frac{a_E^2}{a'^2}\frac{\left(-1 + 5\cos^2 I''\right)}{(1-e''^2)^2}
+    \right]
+  \\\nonumber
+  &=&
+  \frac{3}{4}J_2\sqrt{\mu}a_E^2 a'^{-7/2}(4 - 5\sin^2I'')(1 - e'')^{-2}
+  ,
+  \\
+  \diff{\Omega''}{t} =  
+  \diff{h''}{t} &=& n_0
+  \left[
+    -3\gamma_2\frac{L'^4}{G''^4}\frac{H}{G''}
+    \right]
+  \\\nonumber
+  &=&
+  n_0
+  \left[
+    -\frac{3}{2}J_2\frac{a_E^2}{a'^2}\frac{\cos I''}{(1-e''^2)^2}
+    \right]
+  \\\nonumber
+  &=&
+  -\frac{3}{2}J_2\sqrt{\mu}a_E^2 a'^{-7/2}\cos I''(1 - e'')^{-2},
+\end {eqnarray}
+With substitutions $\mu = 3.986\cdot 10^{5}\:\textrm{km}^3/\textrm{s}^2$ and
+$R_e = 6378.135$ km, we obtain
+\begin {eqnarray}
+  \dot\omega &=&
+  1.03235\cdot 10^{14}\cdot a'^{-7/2}(4 - 5\sin^2I'')(1 - e'')^{-2}
+  \quad (\textrm{expected }1.03237\cdot 10^{14})
+ \\
+  \dot\Omega &=& -2.06471\cdot 10^{14}\cdot
+  a'^{-7/2}\cos I''(1 - e'')^{-2}, \quad\quad\quad
+  (\textrm{expected} -2.06474\cdot 10^{14})
+\end {eqnarray}
+in units degrees/day, where $a$ is in km. The expected values were taken from equations
+$(3-1)$ and $(3-2)$ in \cite{astrodynamics}.
+The results are firther visualized in Figure \ref{fig:secular_example} for a range of ``mean'' mean
+inclinations $I''$. The altitudes refer to semi-major axis values $a' = 6371.15$ km +
+altitude. Note that for large values for eccentricity, referring to ``altitude'' is somewhat
+misleading. The values are consistent with figures 3.5 and 3.7 in \cite{astrodynamics}.
+\begin {figure}[h]
+  \begin {center}
+    \includegraphics [angle=0, width=1\columnwidth, viewport=60 0 750 300, clip] {figures/secular_perturbation_example.eps}
+    \caption{\label{fig:secular_example}Secular perturbations in $\Omega$ and $\omega$ due
+      to the $J_2$ harmonic for several altitudes.
+      The value $e=0.01$ is assumed for eccentricity.}
+  \end {center}
+\end {figure}
 
 \subsection{Elements and Orbit State Vectors}
 
@@ -2812,6 +2924,10 @@ Thereafter, we obtain from Hamilton's equations $(\ref{eq:hamilton})$
   Brouwer - Solution of the Problem of Artificial Satellite Theory Without Drag, The Astronomical Journal, 64, No. 1274, 378-396, 1959 (\url{https://adsabs.harvard.edu/full/1959AJ.....64..378B}).
 \bibitem{karttunen}
   Karttunen - Johdatus Taivaanmekaniikkaan, Ursan julkaisuja 1982, Tähtitieteellinen yhdistys Ursa, 2001.
+\bibitem{vonzeipel_rand}
+  Hutcheson - A Basic Approach to the Use of Canonical Variables and Von Zeipel's Method in Perturbation Theory, Memorandum RM-4074-PR, the RAND Corporation, 1964.
+\bibitem{astrodynamics}
+  Bate, Mueller, White, Saylor, Fundamentals of Astrodynamics, 2ed, Dover, 2020
 \bibitem{vallado_code}
 Vallado - Companion code for Fundamentals of Astrodynamics and Applications, 2013.
 \bibitem{hoots}
